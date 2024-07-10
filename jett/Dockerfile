@@ -14,7 +14,7 @@ COPY . ./
 RUN npm run build
 
 # 포트 5173번 노출
-EXPOSE 5173
+EXPOSE 3000
 
 # 개발 서버 시작
 CMD ["npm", "start"]
