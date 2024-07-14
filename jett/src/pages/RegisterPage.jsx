@@ -1,12 +1,6 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
-import Register from '../components/auth/Register';
-
-const blink = keyframes`
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
-`;
+import styled from 'styled-components';
+import RegisterForm from '../components/signup/RegisterForm';
 
 const Container = styled.div`
     width: 100%;
@@ -14,23 +8,8 @@ const Container = styled.div`
     display: flex;
     flex-direction: row;
 
-    /* 노트북 & 테블릿 가로 (해상도 1024px ~ 1279px) */ 
-    @media screen and (min-width: 1024px) and (max-width: 1279px) { 
-        // 스타일 입력
-    } 
-
-    /* 테블릿 가로 (해상도 768px ~ 1023px) */ 
-    @media screen and (min-width: 768px) and (max-width: 1023px) { 
-        // 스타일 입력
-    } 
-
-    /* 모바일 가로 & 테블릿 세로 (해상도 480px ~ 767px) */ 
-    @media screen and (min-width: 480px) and (max-width: 767px) {
-        flex-direction: column;
-    } 
-
     /* 모바일 세로 (해상도 ~ 479px) */ 
-    @media all and (max-width: 479px) {
+    @media screen and (max-width: 750px) {
         flex-direction: column;
     }
 `;
@@ -41,6 +20,7 @@ const LeftContainer = styled.section`
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: coral;
 
     @media screen and (max-width: 750px) {
         display: none;
@@ -52,7 +32,8 @@ const Title = styled.div`
     font-size: 2.5rem;
     font-weight: 900;
     font-style: italic;
-    color: coral;
+    color: #fff;
+
     @media screen and (max-width: 750px) {
         display: none;
     }
@@ -63,7 +44,8 @@ const RightContainer = styled.section`
     display: flex;
     justify-content: center;
     align-items: center;
-
+    background-color: rgba(0, 0, 0, 0.03);
+    
     @media screen and (max-width: 750px) {
         flex: none;
         width: 100%;
@@ -79,7 +61,7 @@ const RegisterPage = () => {
             </LeftContainer>
 
             <RightContainer>
-                <Register />
+                <RegisterForm />
             </RightContainer>
         </Container>
     );

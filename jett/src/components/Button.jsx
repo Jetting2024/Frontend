@@ -9,30 +9,28 @@ const Container = styled.button`
     width: 380px;
     height: 48px;
     border-radius: 10px;
-    background-color: rgba(153, 175, 255, 0.8);
+    background-color: ${({ color }) => color || 'rgba(153, 175, 255, 0.8)'};
     border: none;
     outline: none;
     font-size: 1rem;
 
     &:hover {
-        background-color: rgba(153, 175, 255, 0.5);
+        /* background-color: rgba(153, 175, 255, 0.5); */
+        opacity: 0.8;
     }
 `;
 
 const IconWrapper = styled.div`
-    width: 20px;
-    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-right: 8px; /* 아이콘과 텍스트 사이의 간격 조정 */
 `;
 
-const Button = ({ children, icon: Icon, size: iconSize }) => {
+const Button = ({ children, icon: Icon, size: iconSize, color }) => {
 
     return (
-        <>
-        <Container>
+        <Container color={color}>
             {Icon && (
                 <IconWrapper>
                     <Icon size={iconSize} />
@@ -40,7 +38,6 @@ const Button = ({ children, icon: Icon, size: iconSize }) => {
             )}
             {children}
         </Container>
-        </>
     );
 };
 
