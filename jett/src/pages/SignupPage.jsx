@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import RegisterForm from '../components/signup/RegisterForm';
 
-const Container = styled.div`
+const Container = styled.body`
     width: 100%;
     height: 100vh;
     display: flex;
@@ -15,12 +15,12 @@ const Container = styled.div`
 `;
 
 const LeftContainer = styled.section`
-    flex: 0.5;
+    flex: 0.65;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: coral;
+    /* background-color: coral; */
 
     @media screen and (max-width: 750px) {
         display: none;
@@ -31,8 +31,7 @@ const Title = styled.div`
     display: flex;
     font-size: 2.5rem;
     font-weight: 900;
-    font-style: italic;
-    color: #fff;
+    color: coral;
 
     @media screen and (max-width: 750px) {
         display: none;
@@ -53,18 +52,20 @@ const RightContainer = styled.section`
     }
 `;
 
-const RegisterPage = () => {
+const SignupPage = () => {
     return (
-        <Container>
-            <LeftContainer>
-                <Title>Jett <br /> 하나로 여행하세요.</Title>
-            </LeftContainer>
+        <>
+            <Container>
+                <LeftContainer>
+                    <Title>Jett 하나로 여행하세요.</Title>
+                </LeftContainer>
 
-            <RightContainer>
-                <RegisterForm />
-            </RightContainer>
-        </Container>
+                <RightContainer>
+                    <RegisterForm />
+                </RightContainer>
+            </Container>
+        </>
     );
 }
 
-export default RegisterPage;
+export default SignupPage;

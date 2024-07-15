@@ -68,7 +68,7 @@ const RegisterForm = () => {
         <TextField type="password" icon={CiLock} placeholder="비밀번호" />
         <Button>가입하기</Button>
         <LoginLink>
-          이미 계정이 존재하신가요? <Link to="/login">로그인</Link>
+          이미 계정이 존재하신가요? <Link to="/signin">로그인</Link>
         </LoginLink>
       </TopContainer>
       <BottomContainer>

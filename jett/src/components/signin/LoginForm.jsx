@@ -4,8 +4,7 @@ import TextField from "../TextField";
 import Button from "../Button";
 import { FaGoogle } from "react-icons/fa6";
 import { SiKakao } from "react-icons/si";
-import { CiLock, CiUser } from "react-icons/ci";
-import { AiOutlineMail } from "react-icons/ai";
+import { CiLock, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
 import { Link } from "react-router-dom";
 
@@ -76,10 +75,10 @@ const LoginForm = () => {
     <Container>
       <TopContainer>
         <h2>시작하기</h2>
-        <TextField type="email" icon={AiOutlineMail} placeholder="이메일" />
+        <TextField type="email" icon={CiMail} placeholder="이메일" />
         <TextField type="password" icon={CiLock} placeholder="비밀번호" />
         <ForgotPasswordLink>
-          <Link to="/loginlost">비밀번호를 잊어버리셨나요?</Link>
+          <Link to="/recover">비밀번호를 잊어버리셨나요?</Link>
         </ForgotPasswordLink>
         <Button>로그인</Button>
       </TopContainer>
@@ -93,7 +92,7 @@ const LoginForm = () => {
           구글로 로그인
         </Button>
         <LoginLink>
-          아직 계정이 없으신가요? <Link to="/register">회원가입</Link>
+          아직 계정이 없으신가요? <Link to="/signup">회원가입</Link>
         </LoginLink>
       </BottomContainer>
     </Container>

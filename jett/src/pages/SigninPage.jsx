@@ -1,5 +1,5 @@
 import React from 'react'
-import LoginForm from '../components/login/LoginForm'
+import LoginForm from '../components/signin/LoginForm'
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -10,7 +10,7 @@ const Container = styled.div`
     background-color: rgba(0, 0, 0, 0.03);
 `;
 
-const LoginPage = () => {
+const SigninPage = () => {
     return (
         <Container>
             <LoginForm />
@@ -19,4 +19,4 @@ const LoginPage = () => {
     )
 }
 
-export default LoginPage;
+export default SigninPage;
