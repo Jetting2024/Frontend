@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 const FullWrapper = styled.div`
     width: 100%;
     height: 100vh;
-    background-color: #FFF;
+    background-color: aqua;
     display: flex;
     flex-direction: column;
 `;

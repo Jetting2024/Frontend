@@ -19,7 +19,6 @@ const Wrapper = styled.div`
     &:hover {
         border-color: rgba(153, 175, 255, 0.9);
     }
-
 `;
 
 const Field = styled.input`
@@ -42,7 +41,7 @@ const IconWrapper = styled.div`
     margin-right: 8px;
 `;
 
-const TextField = ({ type, icon: Icon, placeholder }) => {
+const TextField = ({ type, icon: Icon, placeholder, value, onChange, name }) => {
     return (
         <Wrapper>
             {Icon && (
@@ -50,7 +49,13 @@ const TextField = ({ type, icon: Icon, placeholder }) => {
                     <Icon size={20} />
                 </IconWrapper>
             )}
-            <Field type={type} placeholder={placeholder} />
+            <Field
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                name={name}
+            />
         </Wrapper>
     );
 }
