@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { AiOutlineMail } from "react-icons/ai";
 import { CiPhone, CiMail  } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import TextField from "../TextField";

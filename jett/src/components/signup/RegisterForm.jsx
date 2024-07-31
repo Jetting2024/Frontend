@@ -6,8 +6,8 @@ import { FaGoogle } from "react-icons/fa6";
 import { SiKakao } from "react-icons/si";
 import { CiLock, CiUser, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
-import { Link } from "react-router-dom";
-import axios from '../../global/axios';
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const Container = styled.section`
   width: 500px;
@@ -76,6 +76,8 @@ const RegisterForm = () => {
 
   const [isEmailCheck, setIsEmailCheck] = useState(false);
   const [isEmailAvailable, setIsEmailAvailable] = useState(false);
+
+  const navigate = useNavigate();
 
   const onChangeHandler = (e) => {
     const emailValue = e.target.value;
@@ -150,19 +152,26 @@ const RegisterForm = () => {
     } else return;
 
     try {
-      const response = await axios.post('/member/signUp', {
+      const response = await axios.post('http://localhost:8080/member/signUp', {
         name,
         email,
-        password
+        password,
       });
       if (response.data.success) {
         localStorage.setItem('loginEmail', email);
+        console.log(response);
+        navigate('/');
       } else {
         alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      if (error.response && error.response.data.message === "Duplicate email") {
-        setEmailError('이미 사용중인 이메일입니다.');
+      if (error.response) {
+        const { errorCode } = error.response.data;
+        if (errorCode === 501) {
+          setEmailError('이미 사용중인 이메일입니다.');
+        } else {
+          alert('회원가입에 실패하였습니다. 다시 시도해주세요.');
+        }
         setIsEmailAvailable(false);
         setIsEmailCheck(false);
       } else {
@@ -174,7 +183,7 @@ const RegisterForm = () => {
 
   return (
     <Container>
-      <TopContainer onSubmit={signupHandler}>
+      <TopContainer>
         <h2>계정 만들기</h2>
         <TextField 
           type="text" 
@@ -203,14 +212,13 @@ const RegisterForm = () => {
         {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
         <TextField 
           type="password" 
-          icon={CiLock} 
           placeholder="비밀번호 확인" 
           name="confirm" 
           value={confirm} 
           onChange={onChangePasswordHandler} 
         />
         {confirmError && <ErrorMessage>{confirmError}</ErrorMessage>}
-        <Button type="submit">가입하기</Button>
+        <Button type="submit" onClick={signupHandler}>가입하기</Button>
         <LoginLink>
           이미 계정이 존재하신가요? <Link to="/signin">로그인</Link>
         </LoginLink>
