@@ -20,7 +20,7 @@ const LeftContainer = styled.section`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    /* background-color: coral; */
+
 
     @media screen and (max-width: 750px) {
         display: none;

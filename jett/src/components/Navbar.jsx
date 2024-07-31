@@ -13,7 +13,6 @@ const Wrapper = styled.div`
     align-items: center;
     position: sticky;
     top: 0;
-    background-color: aqua;
 `;
 
 const Logo = styled.div`
@@ -34,6 +33,7 @@ const Menu = styled.div`
     padding: 0.3125rem 1.75rem;
     align-items: center;
     gap: 67px;
+    margin-right: 2rem;
 `;
 
 const MenuItem = styled(Link)`
@@ -42,8 +42,7 @@ const MenuItem = styled(Link)`
     color: inherit;
     font-size: 1rem;
     &:hover{
-        background-color: #c9c9c9;
-        border-radius: 0.75rem;
+        border-bottom: 0.025rem solid #797979;
     }
 `;
 
@@ -51,7 +50,7 @@ const Profile = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 1.25rem;
+    margin-left: 2rem;
 `;
 
 const Navbar = () => {

@@ -27,10 +27,10 @@ const IconWrapper = styled.div`
     margin-right: 8px; /* 아이콘과 텍스트 사이의 간격 조정 */
 `;
 
-const Button = ({ children, icon: Icon, size: iconSize, color }) => {
+const Button = ({ children, icon: Icon, size: iconSize, color, onClick }) => {
 
     return (
-        <Container color={color}>
+        <Container color={color} onClick={onClick}>
             {Icon && (
                 <IconWrapper>
                     <Icon size={iconSize} />
