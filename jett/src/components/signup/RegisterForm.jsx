@@ -7,7 +7,7 @@ import { SiKakao } from "react-icons/si";
 import { CiLock, CiUser, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
 import { Link, useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from '../../global/axios';
 
 const Container = styled.section`
   width: 500px;
@@ -152,7 +152,7 @@ const RegisterForm = () => {
     } else return;
 
     try {
-      const response = await axios.post('http://localhost:8080/member/signUp', {
+      const response = await axios.post('/member/signUp', {
         name,
         email,
         password,
