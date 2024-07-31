@@ -69,6 +69,7 @@ const RegisterForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
 
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -89,7 +90,8 @@ const RegisterForm = () => {
     const { name, value } = e.target;
     if (name === 'password') {
       setPassword(value);
-      passwordCheckHandler(value, confirm);
+      const valid = passwordCheckHandler(value, confirm);
+      setIsPasswordValid(valid);
     } else if (name === 'confirm') {
       setConfirm(value);
       passwordCheckHandler(password, value);
@@ -119,10 +121,10 @@ const RegisterForm = () => {
     if (password === '') {
       setPasswordError('비밀번호를 입력해주세요.');
       return false;
-    } else if(!passwordRegex.test(password)) {
+    } else if (!passwordRegex.test(password)) {
       setPasswordError('비밀번호는 8~16자의 영소문자, 숫자, !@*&-_만 입력 가능합니다.');
       return false;
-    } else if (confirm !== password) {
+    } else if (confirm && confirm !== password) {
       setPasswordError('');
       setConfirmError('비밀번호가 일치하지 않습니다.');
       return false;
@@ -210,15 +212,19 @@ const RegisterForm = () => {
           onChange={onChangePasswordHandler} 
         />
         {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
-        <TextField 
-          type="password" 
-          placeholder="비밀번호 확인" 
-          name="confirm" 
-          value={confirm} 
-          onChange={onChangePasswordHandler} 
-        />
-        {confirmError && <ErrorMessage>{confirmError}</ErrorMessage>}
-        <Button type="submit" onClick={signupHandler}>가입하기</Button>
+        {isPasswordValid && (
+          <>
+            <TextField 
+              type="password" 
+              placeholder="비밀번호 확인" 
+              name="confirm" 
+              value={confirm} 
+              onChange={onChangePasswordHandler} 
+            />
+            {confirmError && <ErrorMessage>{confirmError}</ErrorMessage>}
+          </>
+        )}
+        <Button type="submit" onClick={signupHandler} disabled={!isEmailAvailable}>가입하기</Button>
         <LoginLink>
           이미 계정이 존재하신가요? <Link to="/signin">로그인</Link>
         </LoginLink>

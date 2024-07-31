@@ -9,14 +9,15 @@ const Container = styled.button`
     width: 380px;
     height: 48px;
     border-radius: 10px;
-    background-color: ${({ color }) => color || 'rgba(153, 175, 255, 0.8)'};
+    background-color: ${({ color, disabled }) => 
+        disabled ? 'rgba(0, 0, 0, 0.4)' : (color || 'rgba(153, 175, 255, 0.8)')};
     border: none;
     outline: none;
     font-size: 1rem;
+    opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
     &:hover {
-        /* background-color: rgba(153, 175, 255, 0.5); */
-        opacity: 0.8;
+        opacity: ${({ disabled }) => (disabled ? 0.5 : 0.8)};
     }
 `;
 
@@ -24,13 +25,12 @@ const IconWrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 8px; /* 아이콘과 텍스트 사이의 간격 조정 */
+    margin-right: 8px;
 `;
 
-const Button = ({ children, icon: Icon, size: iconSize, color, onClick }) => {
-
+const Button = ({ children, icon: Icon, size: iconSize, color, onClick, disabled }) => {
     return (
-        <Container color={color} onClick={onClick}>
+        <Container color={color} onClick={onClick} disabled={disabled}>
             {Icon && (
                 <IconWrapper>
                     <Icon size={iconSize} />
