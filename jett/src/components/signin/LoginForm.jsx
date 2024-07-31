@@ -8,7 +8,7 @@ import { CiLock, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
-import { Cookies } from 'react-cookies';
+import Cookies from 'react-cookies';
 
 const Container = styled.section`
   width: 500px;
