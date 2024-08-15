@@ -8,7 +8,7 @@ import { CiLock, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
-import Cookies from 'react-cookies';
+// import Cookies from 'react-cookies';
 
 const Container = styled.section`
   width: 500px;
@@ -90,7 +90,7 @@ const passwordStrength = (password) => {
   return "";
 };
 
-const cookies = new Cookies();
+// const cookies = new Cookies();
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -124,7 +124,7 @@ const LoginForm = () => {
       // 토큰과 사용자 ID를 로컬 스토리지에 저장
       localStorage.setItem("accessToken", response.data.result.jwtToken.accessToken);
       localStorage.setItem("userId", response.data.result.idx);
-      cookies.set('refreshToken', response.data.result.jwtToken.refreshToken);
+      // cookies.set('refreshToken', response.data.result.jwtToken.refreshToken);
       
       // 성공적으로 로그인 후 리디렉션
       navigate("/");
@@ -167,7 +167,7 @@ const LoginForm = () => {
         <ForgotPasswordLink>
           <Link to="/recover">비밀번호를 잊어버리셨나요?</Link>
         </ForgotPasswordLink>
-        <Button onClick={signInHandler}>로그인</Button>
+        <Button onClick={signInHandler} disabled={!email || !password}>로그인</Button>
       </TopContainer>
       <BottomContainer>
         <DivideLine />
