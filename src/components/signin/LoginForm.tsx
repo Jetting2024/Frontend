@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import TextField from "../TextField";
 import Button from "../Button";
 import { FaGoogle } from "react-icons/fa6";
@@ -8,81 +7,10 @@ import { CiLock, CiMail } from "react-icons/ci";
 import { DivideLine } from "../DivideLine";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
-// import Cookies from 'react-cookies';
 
-const Container = styled.section`
-  width: 500px;
-  height: 550px;
-  background-color: transparent;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const TopContainer = styled.form`
-  flex: 1;
-  display: flex;
-  width: 380px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  h2 {
-    margin-top: 20px;
-  }
-`;
-
-const BottomContainer = styled.section`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-`;
-
-const BottomTitle = styled.div`
-  font-size: 1rem;
-`;
-
-const LoginLink = styled.div`
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.5);
-  a {
-    color: rgb(104, 137, 255);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const ForgotPasswordLink = styled.div`
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.5);
-  a {
-    color: rgb(104, 137, 255);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  font-size: 0.8rem;
-  align-self: flex-start;
-`;
-
-// 이메일 정규 표현식
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// 비밀번호 강도 검사
-const passwordStrength = (password) => {
+const passwordStrength = (password: string) => {
   if (password.length < 8) return "비밀번호는 최소 8자 이상이어야 합니다.";
   if (!/[A-Z]/.test(password)) return "비밀번호에는 대문자가 포함되어야 합니다.";
   if (!/[a-z]/.test(password)) return "비밀번호에는 소문자가 포함되어야 합니다.";
@@ -90,23 +18,20 @@ const passwordStrength = (password) => {
   return "";
 };
 
-// const cookies = new Cookies();
-
-const LoginForm = () => {
+const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
 
-  const signInHandler = async (e) => {
+  const signInHandler = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 유효성 검사
     if (!emailRegex.test(email)) {
       setErrorMessage("올바른 이메일 형식을 입력해주세요.");
       return;
-    } 
+    }
 
     const passwordError = passwordStrength(password);
     if (passwordError) {
@@ -115,22 +40,16 @@ const LoginForm = () => {
     }
 
     try {
-      // 비동기 요청 처리
       const response = await axios.post("/member/login", {
         email,
         password,
       });
 
-      // 토큰과 사용자 ID를 로컬 스토리지에 저장
       localStorage.setItem("accessToken", response.data.result.jwtToken.accessToken);
       localStorage.setItem("userId", response.data.result.idx);
-      // cookies.set('refreshToken', response.data.result.jwtToken.refreshToken);
-      
-      // 성공적으로 로그인 후 리디렉션
-      navigate("/");
 
-    } catch (error) {
-      // 에러 처리
+      navigate("/");
+    } catch (error: any) {
       if (error.response) {
         const { errorCode } = error.response.data;
         if (errorCode === 501) {
@@ -146,9 +65,9 @@ const LoginForm = () => {
   };
 
   return (
-    <Container>
-      <TopContainer>
-        <h2>시작하기</h2>
+    <section className="w-[500px] h-[550px] flex flex-col justify-between items-center">
+      <form className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5" onSubmit={signInHandler}>
+        <h2 className="mt-5">시작하기</h2>
         <TextField
           type="email"
           icon={CiMail}
@@ -163,26 +82,28 @@ const LoginForm = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-        <ForgotPasswordLink>
-          <Link to="/recover">비밀번호를 잊어버리셨나요?</Link>
-        </ForgotPasswordLink>
-        <Button onClick={signInHandler} disabled={!email || !password}>로그인</Button>
-      </TopContainer>
-      <BottomContainer>
+        {errorMessage && <div className="text-red-500 text-sm self-start">{errorMessage}</div>}
+        <div className="mt-2 text-sm text-gray-500">
+          <Link to="/recover" className="text-blue-500 hover:underline">
+            비밀번호를 잊어버리셨나요?
+          </Link>
+        </div>
+        <Button disabled={!email || !password}>로그인</Button>
+      </form>
+      <section className="flex-1 flex flex-col justify-center items-center gap-4">
         <DivideLine />
-        <BottomTitle>간편 로그인</BottomTitle>
+        <div className="text-base">간편 로그인</div>
         <Button icon={SiKakao} size={40} color="#FAE100">
           카카오톡으로 로그인
         </Button>
         <Button icon={FaGoogle} size={16} color="#FFFFFF">
           구글로 로그인
         </Button>
-        <LoginLink>
-          아직 계정이 없으신가요? <Link to="/signup">회원가입</Link>
-        </LoginLink>
-      </BottomContainer>
-    </Container>
+        <div className="mt-2 text-sm text-gray-500">
+          아직 계정이 없으신가요? <Link to="/signup" className="text-blue-500 hover:underline">회원가입</Link>
+        </div>
+      </section>
+    </section>
   );
 };
 

@@ -1,55 +1,13 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import { CiLock, CiMail, CiWarning } from "react-icons/ci";
 import TextField from "../TextField";
 import Button from "../Button";
 import { Link } from "react-router-dom";
 
-const FullWrapper = styled.section`
-  width: 500px;
-  height: 360px;
-  background-color: transparent;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  width: 380px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  h2 {
-    margin-top: 20px;
-  }
-`;
-
-const LoginLink = styled.div`
-  margin-top: 2rem;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.5);
-  a {
-    color: rgb(104, 137, 255);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  font-size: 0.8rem;
-  align-self: flex-start;
-`;
-
-const RecoverAccount = () => {
+const RecoverAccount: React.FC = () => {
   const [sendCode, setSendCode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-  
+
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -71,13 +29,13 @@ const RecoverAccount = () => {
     console.log("Verification code:", verificationCode);
   };
 
-  const onChangeEmailHandler = (e) => {
+  const onChangeEmailHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
     emailCheckHandler(emailValue);
   };
 
-  const onChangePasswordHandler = (e) => {
+  const onChangePasswordHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'password') {
       setNewPassword(value);
@@ -89,7 +47,7 @@ const RecoverAccount = () => {
     }
   };
 
-  const emailCheckHandler = (email) => {
+  const emailCheckHandler = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (email === '') {
       setEmailError('이메일을 입력해주세요.');
@@ -103,7 +61,7 @@ const RecoverAccount = () => {
     }
   };
 
-  const passwordCheckHandler = (password) => {
+  const passwordCheckHandler = (password: string) => {
     const passwordRegex = /^[a-z\d!@*&-_]{8,16}$/;
     if (password === '') {
       setPasswordError('비밀번호를 입력해주세요.');
@@ -117,7 +75,7 @@ const RecoverAccount = () => {
     }
   };
 
-  const confirmPasswordHandler = (confirm) => {
+  const confirmPasswordHandler = (confirm: string) => {
     if (confirm !== newPassword) {
       setConfirmError('비밀번호가 일치하지 않습니다.');
       return false;
@@ -128,33 +86,30 @@ const RecoverAccount = () => {
   };
 
   return (
-    <FullWrapper>
+    <section className="w-[500px] h-[360px] flex flex-col justify-between items-center">
       <h2>비밀번호를 잃어버리셨나요?</h2>
       {!sendCode ? (
-        <Wrapper>
-          <TextField 
-            type="email" 
-            icon={CiMail} 
-            placeholder="이메일" 
-            value={email} 
+        <div className="flex flex-col w-[380px] justify-center items-center gap-5">
+          <TextField
+            type="email"
+            icon={CiMail}
+            placeholder="이메일"
+            value={email}
             onChange={onChangeEmailHandler}
           />
-          {emailError && <ErrorMessage>{emailError}</ErrorMessage>}
-          <Button 
-            onClick={handleSendCodeClick} 
-            disabled={!isEmailValid}
-          >
+          {emailError && <div className="text-red-500 text-sm self-start">{emailError}</div>}
+          <Button onClick={handleSendCodeClick} disabled={!isEmailValid}>
             인증메일 발송
           </Button>
-        </Wrapper>
+        </div>
       ) : (
-        <Wrapper>
-          <TextField 
-            type="text" 
-            icon={CiWarning} 
-            placeholder="인증 코드" 
-            value={verificationCode} 
-            onChange={(e) => setVerificationCode(e.target.value)} // Set the value of verification code
+        <div className="flex flex-col w-[380px] justify-center items-center gap-5">
+          <TextField
+            type="text"
+            icon={CiWarning}
+            placeholder="인증 코드"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
           />
           <TextField
             type="password"
@@ -162,9 +117,9 @@ const RecoverAccount = () => {
             placeholder="새 비밀번호"
             name="password"
             value={newPassword}
-            onChange={onChangePasswordHandler} 
+            onChange={onChangePasswordHandler}
           />
-          {passwordError && <ErrorMessage>{passwordError}</ErrorMessage>}
+          {passwordError && <div className="text-red-500 text-sm self-start">{passwordError}</div>}
           {passwordMeetsRequirements && (
             <>
               <TextField
@@ -175,21 +130,21 @@ const RecoverAccount = () => {
                 value={confirm}
                 onChange={onChangePasswordHandler}
               />
-              {confirmError && <ErrorMessage>{confirmError}</ErrorMessage>}
+              {confirmError && <div className="text-red-500 text-sm self-start">{confirmError}</div>}
             </>
           )}
-          <Button 
-            onClick={handleVerifyCodeClick} 
+          <Button
+            onClick={handleVerifyCodeClick}
             disabled={!verificationCode || !passwordMeetsRequirements || !confirm || !newPassword}
           >
             비밀번호 재설정
           </Button>
-        </Wrapper>
+        </div>
       )}
-      <LoginLink>
-        <Link to="/signin">로그인 페이지로 가기</Link>
-      </LoginLink>
-    </FullWrapper>
+      <div className="mt-8 text-sm text-gray-500">
+        <Link to="/signin" className="text-blue-500 hover:underline">로그인 페이지로 가기</Link>
+      </div>
+    </section>
   );
 };
 
