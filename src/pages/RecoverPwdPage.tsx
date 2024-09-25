@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 import RecoverAccount from '../components/recover/RecoverAccount';
 
 const Wrapper = styled.div`
@@ -10,7 +10,7 @@ const Wrapper = styled.div`
   background-color: rgba(0, 0, 0, 0.03);
 `;
 
-const RecoverPwdPage = () => {
+const RecoverPwdPage: React.FC = () => {
   return (
     <Wrapper>
       <RecoverAccount />
