@@ -1,20 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
 import RecoverAccount from '../components/recover/RecoverAccount';
-
-const Wrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.03);
-`;
 
 const RecoverPwdPage: React.FC = () => {
   return (
-    <Wrapper>
+    <div className=' flex justify-center items-center h-screen bg-black bg-opacity-3'>
       <RecoverAccount />
-    </Wrapper>
+    </div>
   );
 };
 
