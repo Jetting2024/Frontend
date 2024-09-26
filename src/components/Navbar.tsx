@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import SearchBar from './search/SearchBar';
-import { CgProfile } from 'react-icons/cg';
+import React from "react";
+import { Link } from "react-router-dom";
+import SearchBar from "./search/SearchBar";
+import { CgProfile } from "react-icons/cg";
 
 const Navbar: React.FC = () => {
   return (
