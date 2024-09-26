@@ -12,9 +12,9 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {/* <Route path='/signup' element={<SignupPage />} />
-          <Route path='/signin' element={<SigninPage />} />
-          <Route path='/recover' element={<RecoverPwdPage />} /> */}
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signin" element={<SigninPage />} />
+          <Route path="/recover" element={<RecoverPwdPage />} />
         </Routes>
       </Router>
     </RecoilRoot>
