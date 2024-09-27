@@ -9,8 +9,8 @@ module.exports = {
       colors: {
         lightgray: "#F5F5F5",
         gray: "#959595",
-        lightblue: "#C8FFFF",
-        blue: "#46FFFF",
+        lightblue: "#CEDDF7",
+        blue: "#509FE8",
       },
       fontSize: {
         base: "15px", // 기본 텍스트 크기를 15px로 설정
