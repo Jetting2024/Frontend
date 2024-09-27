@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FiMenu } from "react-icons/fi"; // 햄버거 메뉴 아이콘 사용
-import SearchBar from "./search/SearchBar";
+import { FiMenu } from "react-icons/fi";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -54,15 +54,53 @@ const Navbar: React.FC = () => {
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out`}
       >
-        <button
-          className="text-black absolute top-4 right-4"
-          onClick={toggleSidebar}
-        >
-          x
-        </button>
+        <nav className="h-full border border-lightgray">
+          {/* 로그인 기능 구현 후 지울 코드 */}
+          <div className="flex flex-col items-center justify-center h-64 bg-lightgray border-b border-lightgray">
+            <button className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600">
+              프로필 편집
+            </button>
+            <img
+              src="https://via.placeholder.com/100"
+              alt="Profile"
+              className="w-20 h-20 rounded-full mb-2"
+            />
+            <h2 className="text-lg">사용자</h2>
+            <p className=" text-xs text-gray mt-2">여행을 좋아하는 모험가</p>
+          </div>
 
-        <nav className="h-full mt-14 border border-lightgray">
-          <div className="h-64 bg-lightgray"></div>
+          {/* 로그인 기능 구현 후 코드 */}
+          {/* {isLoggedIn ? (
+                    <div className="flex flex-col items-center justify-center h-64 bg-lightgray border-b border-lightgray">
+            <button className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600">
+              프로필 편집
+            </button>
+            <img
+              src="https://via.placeholder.com/100"
+              alt="Profile"
+              className="w-20 h-20 rounded-full shadow-lg mb-2"
+            />
+            <h2 className="text-lg">사용자</h2>
+            <p className=" text-xs text-gray mt-2">여행을 좋아하는 모험가</p>
+          </div>
+          ) : (
+
+            // 로그인이 안된 상태
+            <div className="flex flex-col items-center justify-center h-64 bg-lightgray">
+              <img
+                src="https://via.placeholder.com/100"
+                alt="Default Profile"
+                className="w-24 h-24 rounded-full mb-4"
+              />
+              <p className="text-sm text-gray-600">
+                <Link to="/login" className="text-blue-500 hover:underline">
+                  로그인
+                </Link>{" "}
+                후 이용하세요
+              </p>
+            </div>
+          )} */}
+
           <Link
             to="/"
             className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base"
