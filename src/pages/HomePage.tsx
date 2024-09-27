@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
-import TimePicker from '../components/modals/TimePicker';
+import TimePicker from '../components/timeSetModal/TimePicker';
 
 const HomePage: React.FC = () => {
   return (
