@@ -68,6 +68,7 @@ const Navbar: React.FC = () => {
             <h2 className="text-lg">사용자</h2>
             <p className=" text-xs text-gray mt-2">여행을 좋아하는 모험가</p>
           </div>
+          {/* 여기까지 */}
 
           {/* 로그인 기능 구현 후 코드 */}
           {/* {isLoggedIn ? (
