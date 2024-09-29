@@ -116,7 +116,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           {filteredRegions.map((region, index) => (
             <div
               key={index}
-              className="flex justify-between items-center px-8 py-3 cursor-pointer"
+              className="flex justify-between items-center px-8 py-4 cursor-pointer"
             >
               {/* 지역과 카테고리 */}
               <div>

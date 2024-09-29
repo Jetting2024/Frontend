@@ -1,17 +1,29 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiMenu } from "react-icons/fi";
+import Inbox from "./Inbox";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+    if (isInboxOpen) setIsInboxOpen(false); // 사이드바가 열리면 수신함은 닫힘
   };
 
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
+  const handleBackgroundClick = () => {
+    if (isInboxOpen) {
+      setIsInboxOpen(false); // 수신함만 닫기
+    } else if (isSidebarOpen) {
+      setIsSidebarOpen(false); // 사이드바 닫기
+    }
+  };
+
+  // 수신함 열기/닫기
+  const toggleInbox = () => {
+    setIsInboxOpen(!isInboxOpen);
   };
 
   return (
@@ -44,8 +56,8 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* 화면 눌러서 사이드바 닫음 */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0" onClick={closeSidebar}></div>
+      {(isInboxOpen || isSidebarOpen) && (
+        <div className="fixed inset-0" onClick={handleBackgroundClick}></div>
       )}
 
       {/* 사이드바 */}
@@ -101,6 +113,12 @@ const Navbar: React.FC = () => {
               </p>
             </div>
           )} */}
+          <button
+            className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base w-full text-left"
+            onClick={toggleInbox}
+          >
+            내 수신함
+          </button>
 
           <Link
             to="/"
@@ -139,6 +157,7 @@ const Navbar: React.FC = () => {
           </Link>
         </nav>
       </div>
+      <Inbox isOpen={isInboxOpen} toggleInbox={toggleInbox} />
     </div>
   );
 };
