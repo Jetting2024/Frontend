@@ -2,20 +2,25 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiMenu } from "react-icons/fi";
 import Inbox from "./Inbox";
+import FriendList from "./FriendsList";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInboxOpen, setIsInboxOpen] = useState(false);
+  const [isFriendsListOpen, setIsFriendsListOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
     if (isInboxOpen) setIsInboxOpen(false); // 사이드바가 열리면 수신함은 닫힘
+    if (isFriendsListOpen) setIsFriendsListOpen(false);
   };
 
   const handleBackgroundClick = () => {
     if (isInboxOpen) {
-      setIsInboxOpen(false); // 수신함만 닫기
+      setIsInboxOpen(false); // 수신함 닫기
+    } else if (isFriendsListOpen) {
+      setIsFriendsListOpen(false); // 친구목록 닫기
     } else if (isSidebarOpen) {
       setIsSidebarOpen(false); // 사이드바 닫기
     }
@@ -24,6 +29,17 @@ const Navbar: React.FC = () => {
   // 수신함 열기/닫기
   const toggleInbox = () => {
     setIsInboxOpen(!isInboxOpen);
+  };
+
+  const toggleFriendsList = () => {
+    if (isSidebarOpen) {
+      setIsSidebarOpen(true); // 사이드바 닫고
+      setTimeout(() => {
+        setIsFriendsListOpen(true); // 사이드바 닫힌 후 친구 목록 슬라이드로 열림
+      }, 10); // 사이드바가 닫히는 애니메이션 시간과 일치시킴
+    } else {
+      setIsFriendsListOpen(!isFriendsListOpen);
+    }
   };
 
   return (
@@ -55,17 +71,22 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* 화면 눌러서 사이드바 닫음 */}
-      {(isInboxOpen || isSidebarOpen) && (
+      {/* 화면 눌러서 사이드바/수신함/친구목록 닫음 */}
+      {(isInboxOpen || isSidebarOpen || isFriendsListOpen) && (
         <div className="fixed inset-0" onClick={handleBackgroundClick}></div>
       )}
 
       {/* 사이드바 */}
       <div
+        className={`fixed top-0 right-0 h-full w-64 bg-white transform transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* <div
         className={`fixed top-0 right-0 h-full w-64 bg-white text-white transform ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out`}
-      >
+      > */}
         <nav className="h-full border border-lightgray">
           {/* 로그인 기능 구현 후 지울 코드 */}
           <div className="flex flex-col items-center justify-center h-64 bg-lightgray border-b border-lightgray">
@@ -120,13 +141,12 @@ const Navbar: React.FC = () => {
             내 수신함
           </button>
 
-          <Link
-            to="/"
-            className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base"
-            onClick={toggleSidebar}
+          <button
+            className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base w-full text-left"
+            onClick={toggleFriendsList} // 친구 목록 열기/닫기
           >
             내 친구
-          </Link>
+          </button>
           <Link
             to="/"
             className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base"
@@ -157,7 +177,24 @@ const Navbar: React.FC = () => {
           </Link>
         </nav>
       </div>
-      <Inbox isOpen={isInboxOpen} toggleInbox={toggleInbox} />
+      <div
+        className={`fixed top-0 right-0 h-full w-64 shadow-lg transform transition-transform duration-300 ease-in-out ${
+          isInboxOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <Inbox isOpen={isInboxOpen} toggleInbox={toggleInbox} />
+      </div>
+
+      <div
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+          isFriendsListOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <FriendList
+          isOpen={isFriendsListOpen}
+          toggleFriendsList={toggleFriendsList}
+        />
+      </div>
     </div>
   );
 };

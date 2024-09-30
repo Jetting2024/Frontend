@@ -70,9 +70,7 @@ const Inbox: React.FC<InboxProps> = ({ isOpen, toggleInbox }) => {
       {isOpen && (
         <div
           ref={inboxRef}
-          className={`fixed top-0 right-64 h-full w-80 bg-white border-l border-lightgray shadow-sm transform transition-transform duration-300 ease-in-out z-50 ${
-            isOpen ? "translate-x-0" : "translate-x-full"
-          } `}
+          className={`fixed top-0 right-64 h-full w-80 bg-white border-l border-lightgray shadow-sm transform transition-transform duration-300 ease-in-out z-50 `}
         >
           <div className="flex p-4 border-b border-gray">
             <AiOutlineInbox className="text-xl mr-2" />
