@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { RecoilRoot } from "recoil"; // RecoilRoot 추가
+import { RecoilRoot } from "recoil";
 import SignupPage from "./pages/SignupPage";
 import SigninPage from "./pages/SigninPage";
 import HomePage from "./pages/HomePage";
