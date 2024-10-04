@@ -1,0 +1,126 @@
+/* custom.css */
+
+.datepicker-frame {
+  width: 600px;
+  height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 2.5rem;
+  border-width: 2px;
+  border-color: rgba(0, 0, 0, 0.288);
+  border-radius: 20px;
+}
+
+.react-datepicker {
+  background-color: transparent;
+  border: none;
+  padding: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.react-datepicker__header {
+  background-color: #ffffff;
+  border-bottom: none;
+  border-radius: 0px;
+  font-size: 1rem;
+}
+
+.react-datepicker__day-names {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 40px;
+}
+
+.custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding: 0 20px;
+}
+
+.custom-header .year-select {
+  outline: none;
+  border: 1px solid #8d8d8d;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.custom-header .month-button:hover {
+  border-radius: 50%;
+  background-color: #d9d9d9;
+}
+
+.react-datepicker__day {
+  width: 4rem;
+  height: 4rem;
+  align-content: center;
+  margin: 0px !important;
+  font-size: 1rem;
+  border-radius: 0px;
+}
+
+.react-datepicker__day:hover {
+  border-radius: 50% !important;
+  background-color: #d9d9d9 !important;
+  color: #3d3d3d !important;
+}
+
+
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range  {
+  color: #3d3d3d !important;
+  background-color: #d6ebff !important;
+}
+
+.react-datepicker__day--today {
+  color: #509fe8 !important;
+}
+
+.react-datepicker__day--selected {
+  border: 1px solid #509fe8 !important; 
+}
+
+/* 시작 날짜의 왼쪽만 둥글게 */
+.react-datepicker__day--range-start,
+.react-datepicker__day--range-start:hover {
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #509fe8 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* 끝 날짜의 오른쪽만 둥글게 */
+.react-datepicker__day--range-end,
+.react-datepicker__day--range-end:hover {
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%; 
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: #509fe8 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.datepicker-frame .button {
+  width: 150px;
+  height: 50px;
+  border-radius: 30px;
+  background-color: #509fe8;
+  font-size: 1.25rem;
+  color: #fff;
+}
