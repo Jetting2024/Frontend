@@ -5,7 +5,7 @@ import SignupPage from "./pages/SignupPage";
 import SigninPage from "./pages/SigninPage";
 import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
-import MainPage from "./pages/MainPage";
+import TestPage from "./pages/TestPage";
 
 const App: React.FC = () => {
   return (
@@ -16,7 +16,7 @@ const App: React.FC = () => {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signin" element={<SigninPage />} />
           <Route path="/recover" element={<RecoverPwdPage />} />
-          <Route path="/main" element={<MainPage />} />
+          <Route path="/test" element={<TestPage />} />
         </Routes>
       </Router>
     </RecoilRoot>
