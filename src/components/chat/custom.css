@@ -1,0 +1,22 @@
+/* 스크롤바 전체 */
+::-webkit-scrollbar {
+  width: 12px; /* 스크롤바 너비 */
+}
+
+/* 스크롤바 트랙 */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 트랙 배경색 */
+  border-radius: 10px; /* 트랙에 둥근 모서리 */
+}
+
+/* 스크롤바 핸들 */
+::-webkit-scrollbar-thumb {
+  background: #888; /* 핸들 색상 */
+  border-radius: 10px; /* 핸들 둥근 모서리 */
+  border: 3px solid #f1f1f1; /* 핸들 테두리 색상 */
+}
+
+/* 스크롤바 핸들 호버 */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* 호버 시 핸들 색상 */
+}
