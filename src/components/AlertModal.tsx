@@ -3,7 +3,7 @@ import React from "react";
 interface AlertModalProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: React.ReactNode;
   confirmText?: string; // 기본값 : 확인
   onConfirm: () => void; // 확인 버튼 클릭 시 실행할 함수
   onClose: () => void; // 모달 닫기 함수

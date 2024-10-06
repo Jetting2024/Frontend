@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AlertModal from "../components/AlertModal";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -18,32 +19,102 @@ const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
   const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
   const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
 
-  // 여행 정보 수정 함수
-  const handleTripEdit = () => {
-    const newParticipants = prompt(
-      "참여자 리스트를 수정하세요",
-      participants.join(", ")
-    );
-    const newTripTitle = prompt("여행 제목을 수정하세요", tripTitle);
-    const newTripDates = prompt("여행 날짜를 수정하세요", tripDates);
+  const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 열림 상태
+  const [modalType, setModalType] = useState(""); // 수정할 항목을 저장 (참여자, 제목, 날짜)
+  const [editValue, setEditValue] = useState(""); // 수정할 값
 
-    if (newParticipants) setParticipants(newParticipants.split(", "));
-    if (newTripTitle) setTripTitle(newTripTitle);
-    if (newTripDates) setTripDates(newTripDates);
+  // 편집 모드 토글 함수
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode); // 편집 모드 상태를 토글
+  };
+
+  // 여행 정보 수정 모달 열기
+  const openEditModal = (type: string) => {
+    setModalType(type);
+    if (type === "peoples") {
+      setEditValue(participants.join(", "));
+    } else if (type === "title") {
+      setEditValue(tripTitle);
+    } else if (type === "dates") {
+      setEditValue(tripDates);
+    }
+    setIsEditModalOpen(true);
+  };
+
+  // 수정 확인 버튼 클릭 시 실행
+  const handleConfirmEdit = () => {
+    if (modalType === "peoples") {
+      setParticipants(editValue.split(", "));
+    } else if (modalType === "title") {
+      setTripTitle(editValue);
+    } else if (modalType === "dates") {
+      setTripDates(editValue);
+    }
+    setIsEditModalOpen(false);
   };
 
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white border border-gray rounded-2xl p-8 relative">
-        {/* Owner만 수정 버튼 표시 */}
-        {isOwner && (
+        {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
+        {isOwner && !isEditMode && (
           <button
-            className="absolute top-4 right-4 text-sm text-gray hover:underline"
-            onClick={handleTripEdit}
+            onClick={toggleEditMode}
+            className="absolute text-gray top-4 right-4 hover:text-black hover:underline"
           >
             편집하기
           </button>
         )}
+        {isOwner && isEditMode && (
+          <div className="absolute top-4 right-4 flex gap-2">
+            {/* 나중에 수정 */}
+            <button
+              onClick={() => openEditModal("peoples")}
+              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+            >
+              멤버 수정
+            </button>
+
+            <button
+              onClick={() => openEditModal("title")}
+              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+            >
+              제목 수정
+            </button>
+
+            <button
+              onClick={() => openEditModal("dates")}
+              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+            >
+              날짜 수정
+            </button>
+          </div>
+        )}
+
+        {/* 수정 모달 */}
+        <AlertModal
+          isOpen={isEditModalOpen}
+          title={`${
+            modalType === "participants"
+              ? "참여자 수정"
+              : modalType === "title"
+                ? "제목 수정"
+                : "날짜 수정"
+          }`}
+          message={
+            <input
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+          }
+          confirmText="수정"
+          onConfirm={handleConfirmEdit}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+
         <div className="mb-4 mt-8 text-center">
           <p>{participants.join(", ")}의</p>
           <h2 className="text-2xl font-bold">{tripTitle}</h2>
