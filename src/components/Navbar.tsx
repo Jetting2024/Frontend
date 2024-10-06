@@ -15,7 +15,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-14 flex justify-between items-center sticky top-0 border-b border-lightgray bg-white px-8">
+    <div className="w-full h-14 flex justify-between items-center sticky top-0 border-b border-lightgray bg-white px-8 z-50">
       <div>
         <Link
           to="/"
