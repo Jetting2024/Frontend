@@ -1,25 +1,22 @@
 /* custom.css */
 
 .datepicker-frame {
-  width: 600px;
-  height: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 2.5rem;
-  border-width: 2px;
-  border-color: rgba(0, 0, 0, 0.288);
-  border-radius: 20px;
+  border-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  background-color: white;
 }
 
 .react-datepicker {
   background-color: transparent;
   border: none;
-  padding: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 }
 
 .react-datepicker__header {
@@ -33,7 +30,7 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 40px;
+  height: 30px;
 }
 
 .custom-header {
@@ -57,8 +54,8 @@
 }
 
 .react-datepicker__day {
-  width: 4rem;
-  height: 4rem;
+  width: 3rem;
+  height: 3rem;
   align-content: center;
   margin: 0px !important;
   font-size: 1rem;
@@ -112,15 +109,27 @@
 
 .button-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.datepicker-frame .button {
-  width: 150px;
-  height: 50px;
+.datepicker-frame .button1 {
+  width: 240px;
+  height: 48px;
+  margin-top: 10px;
   border-radius: 30px;
-  background-color: #509fe8;
-  font-size: 1.25rem;
+  background-color: #000;
+  font-size: 1rem;
   color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.datepicker-frame .button2 {
+  margin-top: 16px;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  color: #3d3d3d;
 }
