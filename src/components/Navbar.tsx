@@ -148,7 +148,7 @@ const Navbar: React.FC = () => {
             내 친구
           </button>
           <Link
-            to="/"
+            to="/my-plan"
             className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base"
             onClick={toggleSidebar}
           >

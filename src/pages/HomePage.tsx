@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
 
   const handleScroll = () => {
     const scrollElement = scrollRef.current;
