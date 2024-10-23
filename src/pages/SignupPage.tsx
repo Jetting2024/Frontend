@@ -1,17 +1,16 @@
-import React from 'react';
-import RegisterForm from '../components/signup/RegisterForm';
+import React from "react";
+import LoginForm from "../components/signup/RegisterForm";
+import RegisterForm from "../components/signup/RegisterForm";
 
 const SignupPage: React.FC = () => {
   return (
-    <div className=' w-full h-full flex flex-row md:flex-col'>
-        <section className=' flex-[0.65] flex flex-col justify-center items-center md:flex'>
-            <div className=' flex text-[2.5rem] font-bold md:flex'>
-                Jetting으로 일정을 만들어보세요!
-            </div>
-        </section>
-        <section className=' flex-1 flex justify-center items-center bg-black bg-opacity-0.03'>
-            <RegisterForm />
-        </section>
+    <div className="flex flex-col justify-center items-center">
+      <RegisterForm />
+      <h1 className="text-xl font-extrabold">친구들과 여행 일정을 한 번에!</h1>
+      <h2 className="text-xl font-extrabold">JETTING</h2>
+      <div>그림</div>
+      <div>카카오로 쉬운 시작</div>
+      <div></div>
     </div>
   );
 };

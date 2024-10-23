@@ -57,7 +57,7 @@ const Navbar: React.FC = () => {
       <div className="flex items-center gap-8 ml-auto">
         <div className="flex">
           <Link
-            to="/signup"
+            to="/signin"
             className="py-1 px-3 text-gray font-sans font-light text-sm hover:text-black"
           >
             로그인/회원가입
