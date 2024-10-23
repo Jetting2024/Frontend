@@ -9,6 +9,7 @@ import TestPage from "./pages/TestPage";
 import LoginForm from "./components/signin/LoginForm";
 import RegisterForm from "./components/signup/RegisterForm";
 import Navbar from "./components/Navbar"; // NavBar 가져오기
+import SchedulePage from "./pages/SchedulePage";
 
 const App: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/recover" element={<RecoverPwdPage />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
         </Routes>
       </Router>
     </RecoilRoot>
