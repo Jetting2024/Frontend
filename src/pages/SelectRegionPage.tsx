@@ -3,7 +3,7 @@ import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불�
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 
-const HomePage: React.FC = () => {
+const SelectRegionPage: React.FC = () => {
   const handleSearch = (query: string) => {
     console.log("검색어:", query);
     // 검색 로직 처리 또는 API 호출
@@ -42,9 +42,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      <section className="flex flex-col flex-grow justify-center items-center h-1/2 pb-4 bg-gradient-to-b from-[rgba(80,159,232,1)] via-[rgba(80,159,232,0.5)] to-[rgba(80,159,232,0)]">
-        <div className="text-white text-[2rem] font-bold tracking-wide mb-4">
-          친구들과 여행 일정을 한 번에!
+      <section className="flex flex-col flex-grow justify-center items-center h-1/2">
+        <div className="text-2xl font-extrabold tracking-wide mb-8">
+          어디로 가시나요?
         </div>
         <SearchBar placeholder="어디로 가시나요?" onSearch={handleSearch} />
       </section>
@@ -92,4 +92,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default SelectRegionPage;
