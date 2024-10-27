@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
@@ -44,7 +43,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      <Navbar />
       <section className="flex flex-col flex-grow justify-center items-center h-1/2 pb-4 bg-gradient-to-b from-[rgba(80,159,232,1)] via-[rgba(80,159,232,0.5)] to-[rgba(80,159,232,0)]">
         <div className="text-white text-[2rem] font-bold tracking-wide mb-4">
           친구들과 여행 일정을 한 번에!
