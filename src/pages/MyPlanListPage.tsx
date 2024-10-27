@@ -33,8 +33,6 @@ const MyPlanListPage: React.FC = () => {
 
   return (
     <div className="w-full h-screen relative">
-      <Navbar />
-
       <div className="w-1/2 mx-auto flex items-center sticky top-24 bg-white z-10">
         <TabButton
           label="나의 여행"

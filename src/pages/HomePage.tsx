@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 
 const HomePage: React.FC = () => {
-  const handleSearch = (query: string) => {
-    console.log("검색어:", query);
-    // 검색 로직 처리 또는 API 호출
+  const navigate = useNavigate();
+  const handleSearch = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
+    navigate("/select-region");
   };
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,13 @@ const HomePage: React.FC = () => {
         <div className="text-white text-[2rem] font-bold tracking-wide mb-4">
           친구들과 여행 일정을 한 번에!
         </div>
-        <SearchBar placeholder="어디로 가시나요?" onSearch={handleSearch} />
+        <div
+          onClick={handleSearch}
+          className="w-full inline-flex justify-center cursor-pointer"
+        >
+          {" "}
+          <SearchBar placeholder="어디로 가시나요?" onSearch={() => {}} />
+        </div>
       </section>
 
       <section className="flex flex-col justify-center items-center h-1/2 p-10">
