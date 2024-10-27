@@ -13,6 +13,7 @@ import InviteFriendsPage from "./pages/InviteFriendsPage";
 import SelectDatePage from "./pages/SelectDatePage";
 import MyProfilePage from "./pages/MyProfilePage";
 import MyPlanListPage from "./pages/MyPlanListPage";
+import SelectRegionPage from "./pages/SelectRegionPage";
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const App: React.FC = () => {
           <Route path="/select" element={<SelectDatePage />} />
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
+          <Route path="/select-region" element={<SelectRegionPage />} />
         </Routes>
       </Router>
     </RecoilRoot>
