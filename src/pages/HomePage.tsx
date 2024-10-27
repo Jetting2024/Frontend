@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
