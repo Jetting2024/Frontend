@@ -9,6 +9,10 @@ import LoginForm from "./components/signin/LoginForm";
 import RegisterForm from "./components/signup/RegisterForm";
 import Navbar from "./components/Navbar"; // NavBar 가져오기
 import SchedulePage from "./pages/SchedulePage";
+import InviteFriendsPage from "./pages/InviteFriendsPage";
+import SelectDatePage from "./pages/SelectDatePage";
+import MyProfilePage from "./pages/MyProfilePage";
+import MyPlanListPage from "./pages/MyPlanListPage";
 
 const App: React.FC = () => {
   return (
@@ -22,6 +26,10 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/recover" element={<RecoverPwdPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/invite" element={<InviteFriendsPage />} />
+          <Route path="/select" element={<SelectDatePage />} />
+          <Route path="/my-profile" element={<MyProfilePage />} />
+          <Route path="/my-plan" element={<MyPlanListPage />} />
         </Routes>
       </Router>
     </RecoilRoot>

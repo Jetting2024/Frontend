@@ -5,6 +5,7 @@ import "./custom.css"; // 커스텀 CSS 파일
 import { ko } from "date-fns/locale"; // 한국어 설정
 import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
+import { Link } from "react-router-dom";
 
 const MONTHS = [
   "1월",
@@ -57,9 +58,9 @@ const DayPicker: React.FC = () => {
   };
 
   return (
-    <div className="datepicker-frame">
-      <div className="font-bold text-[1.2rem] mt-2 mb-4">언제 가시나요?</div>
-      <div className="font-bold text-[1.6rem] mb-4">날짜를 선택해주세요.</div>
+    <div className="datepicker-frame w-[517px] h-[620px]">
+      <div className="font-bold text-[1.2rem] mb-2">언제 가시나요?</div>
+      <div className="font-bold text-[1.2rem] mb-4">날짜를 선택해주세요.</div>
       <div>
         <DatePicker
           withPortal
@@ -118,9 +119,12 @@ const DayPicker: React.FC = () => {
         />
         
         <div className="button-container">
-          <button className="button" onClick={selectDate}>
+          <Link className="button1" onClick={selectDate} to='/invite'>
             선택
-          </button>
+          </Link>
+          <Link className="button2" to='/'>
+            지역 다시 선택하기
+          </Link>
         </div>
       </div>
     </div>

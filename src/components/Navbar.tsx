@@ -90,9 +90,9 @@ const Navbar: React.FC = () => {
         <nav className="h-full border border-lightgray">
           {/* 로그인 기능 구현 후 지울 코드 */}
           <div className="flex flex-col items-center justify-center h-64 bg-lightgray border-b border-lightgray">
-            <button className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600">
+            <Link to="/my-profile" className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600">
               프로필 편집
-            </button>
+            </Link>
             <img
               src="https://via.placeholder.com/100"
               alt="Profile"
@@ -148,7 +148,7 @@ const Navbar: React.FC = () => {
             내 친구
           </button>
           <Link
-            to="/"
+            to="/my-plan"
             className="block border-b border-lightgray px-6 py-4 hover:bg-lightgray text-base"
             onClick={toggleSidebar}
           >

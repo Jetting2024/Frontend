@@ -95,7 +95,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <div className="w-1/2" ref={searchBarRef}>
       {/* 검색창 */}
-      <div className="flex items-center border border-[#B3B3B3] rounded-3xl py-2 px-6">
+      <div className="flex items-center border border-[#B3B3B3] rounded-3xl py-2 px-6 bg-white">
         <input
           type="text"
           value={query}
@@ -112,7 +112,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* 추천 지역 목록 */}
       {showSuggestions && filteredRegions.length > 0 && (
-        <div className="absolute w-1/2 border border-[#B3B3B3] rounded-2xl bg-white shadow-lg">
+        <div className="absolute w-1/2 border border-[#B3B3B3] rounded-2xl bg-white shadow-lg z-40">
           {filteredRegions.map((region, index) => (
             <div
               key={index}
