@@ -5,6 +5,7 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa"; // 아이콘 추가
+import Schedule from "../components/Schedule";
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -24,14 +25,41 @@ const SchedulePage: React.FC = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
+  const scheduleData = [
+    {
+      id: 1,
+      title: "이치란 본점",
+      time: "AM 10:00~ AM 11:00",
+      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
+      photo: "",
+    },
+    {
+      id: 2,
+      title: "이치란 본점",
+      time: "AM 10:00~ AM 11:00",
+      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
+      photo: "",
+    },
+    {
+      id: 3,
+      title: "이치란 본점",
+      time: "AM 10:00~ AM 11:00",
+      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
+      photo: "",
+    },
+  ];
+
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-1">
         {/* 일정 짜기 세션 */}
         <div className="w-1/3 h-screen border border-lightgray p-4 relative">
-          <h2 className="text-lg font-bold mb-4">일정</h2>
           <div>
-            <p>일정일정</p>
+            <Schedule
+              isOwner={true}
+              scheduleData={scheduleData}
+              addLocation={toggleSearch}
+            />
           </div>
 
           {/* 검색 세션 */}

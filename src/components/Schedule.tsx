@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import AlertModal from "../components/AlertModal";
 
 interface ScheduleProps {
   isOwner: boolean;
   scheduleData: ScheduleItem[]; // 일정 데이터 구조
+  addLocation: () => void;
 }
 
 interface ScheduleItem {
@@ -14,7 +15,11 @@ interface ScheduleItem {
   location: string;
 }
 
-const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
+const Schedule: React.FC<ScheduleProps> = ({
+  isOwner,
+  scheduleData,
+  addLocation,
+}) => {
   const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
   const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
   const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
@@ -23,6 +28,35 @@ const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 열림 상태
   const [modalType, setModalType] = useState(""); // 수정할 항목을 저장 (참여자, 제목, 날짜)
   const [editValue, setEditValue] = useState(""); // 수정할 값
+
+  const [displayedData, setDisplayedData] = useState<ScheduleItem[]>(
+    scheduleData.slice(0, 10)
+  );
+  const [page, setPage] = useState(1);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  //무한 스크롤 함수
+  const loadMoreItems = useCallback(() => {
+    const nextItems = scheduleData.slice(page * 10, (page + 1) * 10);
+    if (nextItems.length > 0) {
+      setDisplayedData((prev) => [...prev, ...nextItems]);
+      setPage((prev) => prev + 1);
+    }
+  }, [page, scheduleData]);
+
+  // 마지막 아이템을 감지하는 Ref
+  const lastItemRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreItems();
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [loadMoreItems]
+  );
 
   // 편집 모드 토글 함수
   const toggleEditMode = () => {
@@ -55,8 +89,8 @@ const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="bg-white border border-gray rounded-2xl p-8 relative">
+    <div className="container mx-auto p-4 h-screen overflow-y-auto">
+      <div className="bg-white rounded-2xl p-8 relative">
         {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
         {isOwner && !isEditMode && (
           <button
@@ -142,7 +176,10 @@ const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
               </div>
               {isOwner && (
                 <div className="mt-6 text-center">
-                  <button className="w-full py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white">
+                  <button
+                    onClick={addLocation}
+                    className="w-full py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white"
+                  >
                     장소 추가
                   </button>
                   {/* <button className="ml-4 px-12 py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white">
@@ -152,6 +189,7 @@ const Schedule: React.FC<ScheduleProps> = ({ isOwner, scheduleData }) => {
               )}
             </div>
           ))}
+          <div ref={lastItemRef} className="h-1" />
         </div>
       </div>
     </div>
