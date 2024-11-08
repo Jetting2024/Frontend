@@ -32,7 +32,9 @@ const MyPlanListPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen relative">
+    <div className="w-full h-screen min-w-[640px] relative">
+      <Navbar />
+
       <div className="w-1/2 mx-auto flex items-center sticky top-24 bg-white z-10">
         <TabButton
           label="나의 여행"
@@ -74,9 +76,28 @@ const MyPlanListPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="w-full flex flex-col">
+            <div className="w-full flex flex-col bg-green-200 min-w-[480px]">
               <div className="text-[1.6rem] font-bold mt-8">나의 장소</div>
-              <PlaceList />
+              <div className=" grid grid-flow-row grid-cols-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+                <PlaceList />
+              </div>
             </div>
           )}
         </div>
