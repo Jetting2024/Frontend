@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { GoPerson } from "react-icons/go";
 
 const MyProfilePage: React.FC = () => {

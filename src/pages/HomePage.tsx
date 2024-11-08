@@ -43,7 +43,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-[calc(100vh-56px)] flex flex-col overflow-hidden">
       <section className="flex flex-col flex-grow justify-center items-center h-1/2 pb-4 bg-gradient-to-b from-[rgba(80,159,232,1)] via-[rgba(80,159,232,0.5)] to-[rgba(80,159,232,0)]">
         <div className="text-white text-[2rem] font-bold tracking-wide mb-4">
           친구들과 여행 일정을 한 번에!
