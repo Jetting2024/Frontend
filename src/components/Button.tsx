@@ -19,7 +19,7 @@ const Button: React.FC<ButtonProps> = ({
   }) => {
     return (
       <button
-        className={`flex justify-center items-center w-[380px] h-[48px] rounded-lg ${color} text-white font-medium text-lg
+        className={`flex justify-center items-center w-[380px] h-[48px] rounded-lg ${color} text-white font-medium text-sm
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80'}`}
         onClick={onClick}
         disabled={disabled}

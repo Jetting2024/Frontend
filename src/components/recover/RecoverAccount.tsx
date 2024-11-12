@@ -86,7 +86,7 @@ const RecoverAccount: React.FC = () => {
   };
 
   return (
-    <section className="w-[500px] h-[360px] flex flex-col justify-between items-center">
+    <section className="w-[500px] h-auto flex flex-col justify-between items-center gap-5">
       <h2>비밀번호를 잃어버리셨나요?</h2>
       {!sendCode ? (
         <div className="flex flex-col w-[380px] justify-center items-center gap-5">
@@ -98,9 +98,9 @@ const RecoverAccount: React.FC = () => {
             onChange={onChangeEmailHandler}
           />
           {emailError && <div className="text-red-500 text-sm self-start">{emailError}</div>}
-          <Button onClick={handleSendCodeClick} disabled={!isEmailValid}>
+          <button onClick={handleSendCodeClick} disabled={!isEmailValid}>
             인증메일 발송
-          </Button>
+          </button>
         </div>
       ) : (
         <div className="flex flex-col w-[380px] justify-center items-center gap-5">
@@ -133,12 +133,12 @@ const RecoverAccount: React.FC = () => {
               {confirmError && <div className="text-red-500 text-sm self-start">{confirmError}</div>}
             </>
           )}
-          <Button
+          <button
             onClick={handleVerifyCodeClick}
             disabled={!verificationCode || !passwordMeetsRequirements || !confirm || !newPassword}
           >
             비밀번호 재설정
-          </Button>
+          </button>
         </div>
       )}
       <div className="mt-8 text-sm text-gray-500">
