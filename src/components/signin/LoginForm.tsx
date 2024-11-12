@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import TextField from "../TextField";
-import Button from "../Button";
-import { FaGoogle } from "react-icons/fa6";
-import { SiKakao } from "react-icons/si";
 import { CiLock, CiMail } from "react-icons/ci";
-import { DivideLine } from "../DivideLine";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
 
@@ -12,11 +8,6 @@ const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const passwordStrength = (password: string) => {
   if (password.length < 8) return "비밀번호는 최소 8자 이상이어야 합니다.";
-  if (!/[A-Z]/.test(password))
-    return "비밀번호에는 대문자가 포함되어야 합니다.";
-  if (!/[a-z]/.test(password))
-    return "비밀번호에는 소문자가 포함되어야 합니다.";
-  if (!/\d/.test(password)) return "비밀번호에는 숫자가 포함되어야 합니다.";
   return "";
 };
 
@@ -43,8 +34,8 @@ const LoginForm: React.FC = () => {
 
     try {
       const response = await axios.post("/member/login", {
-        email,
-        password,
+        email: email,
+        password: password,
       });
 
       localStorage.setItem(
@@ -74,7 +65,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <section className="w-[500px] h-[550px] flex flex-col justify-between items-center">
+    <section className="w-[500px] h-auto flex flex-col justify-between items-center">
       <form
         className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5"
         onSubmit={signInHandler}
@@ -97,26 +88,24 @@ const LoginForm: React.FC = () => {
         {errorMessage && (
           <div className="text-red-500 text-sm self-start">{errorMessage}</div>
         )}
-        <div className="mt-2 text-sm text-gray-500">
-          <Link to="/recover" className="text-blue-500 hover:underline">
+        <div className="mt-2 text-sm">
+          <Link to="/recover" className="text-gray hover:underline">
             비밀번호를 잊어버리셨나요?
           </Link>
         </div>
-        <Button disabled={!email || !password}>로그인</Button>
-      </form>
-      <section className="flex-1 flex flex-col justify-center items-center gap-4">
-        <DivideLine />
-        <div className="text-base">간편 로그인</div>
-        <Button icon={SiKakao} size={40} color="#FAE100">
-          카카오톡으로 로그인
-        </Button>
-        <div className="mt-2 text-sm text-gray-500">
-          아직 계정이 없으신가요?{" "}
-          <Link to="/signup" className="text-blue-500 hover:underline">
-            회원가입
-          </Link>
+
+        <div className="w-[364px] h-10 flex justify-center items-center rounded-lg bg-black mb-5 hover:bg-gray">
+          <button className="text-sm text-white" disabled={!email || !password}>
+            로그인
+          </button>
         </div>
-      </section>
+      </form>
+      <div className=" text-sm text-gray">
+        아직 계정이 없으신가요?{" "}
+        <Link to="/signup" className="text-black hover:underline">
+          회원가입
+        </Link>
+      </div>
     </section>
   );
 };

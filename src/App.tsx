@@ -5,8 +5,8 @@ import SignupPage from "./pages/SignupPage";
 import SigninPage from "./pages/SigninPage";
 import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
-import LoginForm from "./components/signin/LoginForm";
-import RegisterForm from "./components/signup/RegisterForm";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import Navbar from "./components/Navbar"; // NavBar 가져오기
 import SchedulePage from "./pages/SchedulePage";
 import InviteFriendsPage from "./pages/InviteFriendsPage";
@@ -22,9 +22,9 @@ const App: React.FC = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/signup" element={<RegisterForm />} />
+          <Route path="/signup" element={<RegisterPage />} />
           <Route path="/signin" element={<SigninPage />} />
-          <Route path="/login" element={<LoginForm />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/recover" element={<RecoverPwdPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/invite" element={<InviteFriendsPage />} />
