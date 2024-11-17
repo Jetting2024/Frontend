@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa6";
 import { IoPersonAddOutline } from "react-icons/io5";
 import ChatInfo from "./ChatInfo";
-import MessageInput from "./MessageInput";
-import MessageItem from "./MyMessageItem";
+import MessageInput from "./InputField/MessageInput";
+import MessageItem from "./MessageContainer/MyMessageItem";
 import TodayDate from "./TodayDate";
-import FriendMessageItem from "./FriendMessageItem";
+import FriendMessageItem from "./MessageContainer/FriendMessageItem";
 import './custom.css';
 
 const ChatWindow: React.FC = () => {
