@@ -1,6 +1,5 @@
 import React from "react";
 import DayPicker from "../components/daypicker/DayPicker";
-import Navbar from "../components/Navbar";
 
 const SelectDatePage: React.FC = () => {
   return (
