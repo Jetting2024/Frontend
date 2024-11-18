@@ -6,11 +6,6 @@ import axios from "../../global/axios";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-const passwordStrength = (password: string) => {
-  if (password.length < 8) return "비밀번호는 최소 8자 이상이어야 합니다.";
-  return "";
-};
-
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,14 +21,8 @@ const LoginForm: React.FC = () => {
       return;
     }
 
-    const passwordError = passwordStrength(password);
-    if (passwordError) {
-      setErrorMessage(passwordError);
-      return;
-    }
-
     try {
-      const response = await axios.post("/member/login", {
+      const response = await axios.post("http://localhost:8080/member/login", {
         email: email,
         password: password,
       });

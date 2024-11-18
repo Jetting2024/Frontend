@@ -98,7 +98,7 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
     } else return;
 
     try {
-      const response = await axios.post("/member/signUp", {
+      const response = await axios.post("http://localhost:8080/member/signUp", {
         name: name,
         email: email,
         password: password,
