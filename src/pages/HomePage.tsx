@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+<<<<<<< Updated upstream
 import WebSocketTest from "../components/webSocketTest";
+=======
+<<<<<<< Updated upstream
+=======
+import WebSocketTest from "../components/webSocketTest";
+import ChatWindow from "../components/chat/ChatWindow";
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();

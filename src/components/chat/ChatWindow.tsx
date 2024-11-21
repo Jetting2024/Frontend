@@ -2,37 +2,179 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa6";
 import { IoPersonAddOutline } from "react-icons/io5";
 import ChatInfo from "./ChatInfo";
+<<<<<<< Updated upstream
 import MessageInput from "./InputField/MessageInput";
 import MessageItem from "./MessageContainer/MyMessageItem";
+=======
+<<<<<<< Updated upstream
+import MessageInput from "./MessageInput";
+import MessageItem from "./MyMessageItem";
+>>>>>>> Stashed changes
 import TodayDate from "./TodayDate";
 import FriendMessageItem from "./MessageContainer/FriendMessageItem";
 import './custom.css';
+=======
+import MessageInput from "./InputField/MessageInput";
+import MessageItem from "./MessageContainer/MessageItem";
+import TodayDate from "./TodayDate";
+import "./custom.css";
+import { Client } from "@stomp/stompjs";
+
+interface ChatMessage {
+  id: string;
+  userId: string | null;
+  roomId: string;
+  content: string | null;
+  timestamp: string;
+}
+
+const currentUserId = localStorage.getItem("userId") || "defaultUserId"; // "5" 이런식으로 저장됨
+
+const dummyChatData: ChatMessage[] = [
+  {
+    id: "1",
+    userId: "1",
+    roomId:"101",
+    content: "안녕! 오늘 뭐해?",
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    userId: "2",
+    roomId:"101",
+    content: "안녕! 나는 영화 보러 갈 거야.",
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "3",
+    userId: "6",
+    roomId:"101",
+    content: "좋겠다! 무슨 영화 볼 건데?",
+    timestamp: new Date().toISOString(),
+  },
+  {
+    id: "4",
+    userId: "5",
+    roomId:"101",
+    content: "안녕! 나도 영화 보고 싶다 ㅎㅎ",
+    timestamp: new Date().toISOString(),
+  },
+];
+>>>>>>> Stashed changes
 
 const ChatWindow: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
-  const [messages, setMessages] = useState<string[]>([]);
+  const [roomId, setRoomId] = useState<number>(1);
+
+  const [myId, setMyId] = useState<number | undefined>(undefined);
+  const [friendId, setFriendId] = useState<number[]>([]);
+
+  // const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(dummyChatData);
+
+  const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const clientRef = useRef<Client | null>(null);
+  const subscriptionRef = useRef<string | null>(null);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
-  const handleSendMessage = (message: string) => {
-    setMessages([...messages, message]);
+  // const handleSendMessage = (newMessage: string) => {
+  //   const chatMessage: ChatMessage = {
+  //     id: `${messages.length + 1}`,
+  //     userId: currentUserId,
+  //     friendId: null,
+  //     content: newMessage,
+  //     timestamp: new Date().toISOString(),
+  //   };
+
+  //   setMessages((prev) => [...prev, chatMessage]); // 메시지 추가
+  // };
+
+  const handleSendMessage = (newMessage: string) => {
+    const chatMessage: ChatMessage = {
+      id: `${Date.now()}`,
+      userId: currentUserId,
+      roomId: roomId.toString(),
+      content: newMessage,
+      timestamp: new Date().toISOString(),
+    };
+
+    // WebSocket 연결 상태 확인 후 메시지 전송
+    if (clientRef.current && clientRef.current.connected) {
+      clientRef.current.publish({
+        destination: `/pub/sendMessage/${roomId}`,
+        body: JSON.stringify(chatMessage),
+      });
+      setMessages((prev) => [...prev, chatMessage]);
+    } else {
+      console.log("WebSocket is not connected.");
+    }
   };
+
+  const switchRoom = (newRoomId: number) => {
+    if (clientRef.current && clientRef.current.connected) {
+      if (subscriptionRef.current) {
+        clientRef.current.unsubscribe(subscriptionRef.current); // 현재 구독 해제
+        subscriptionRef.current = null;
+      }
+
+      const subscription = clientRef.current.subscribe(
+        `/sub/chat/room/${newRoomId}`,
+        (message) => {
+          const receivedMessage: ChatMessage = JSON.parse(message.body);
+          setMessages((prev) => [...prev, receivedMessage]);
+        }
+      );
+      
+      subscriptionRef.current = subscription.id;
+    }
+
+    setRoomId(newRoomId);
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, receivedMessages]);
+
+  useEffect(() => {
+    const stompClient = new Client({
+      brokerURL: "ws://localhost:8080/ws",
+      onConnect: () => {
+        console.log("connected to websocket");
+
+        switchRoom(roomId);
+        setIsConnected(true);
+
+      },
+      onDisconnect: () => {
+        console.log("Disconnected from WebSocket");
+        setIsConnected(false);
+      },
+      onStompError: (error) => {
+        console.error("STOMP ERROR: ", error);
+      },
+    });
+  
+    stompClient.activate(); // 클라이언트 활성화
+    clientRef.current = stompClient;
+
+    return () => {
+      stompClient.deactivate(); // 컴포넌트 언마운트 시 WebSocket 비활성화
+    };
+  }, []);
 
   return (
     <section
-      className={`fixed bottom-0 right-0 w-[83rem] max-w-full min-w-[40rem] border-2 border-lightgray rounded-tr-3xl rounded-tl-3xl shadow-md transition-all duration-300 ease-in-out`}
+      className={`bg-white fixed z-40 bottom-0 right-0 w-[78rem] max-w-full min-w-[40rem] border-2 border-lightgray rounded-tr-3xl rounded-tl-3xl shadow-md transition-all duration-300 ease-in-out`}
       style={{
         height: isChatOpen ? "53rem" : "3rem",
       }}
     >
-      {/* 채팅창 내용 */}
+      {/* 채팅창 헤더 */}
       <div className="h-12 flex items-center justify-between px-4">
         <div className="flex-grow flex justify-center">
           <button
@@ -46,47 +188,40 @@ const ChatWindow: React.FC = () => {
             )}
           </button>
         </div>
-
         {isChatOpen && (
-          <button className="flex items-center gap-2 text-gray-200">
-            멤버 초대하기
-            <IoPersonAddOutline />
+          <button className="flex items-center gap-2">
+            <div className=" mt-1 text-gray">멤버 초대하기</div>
+            <IoPersonAddOutline fill="#959595" />
           </button>
         )}
       </div>
 
+      {/* 채팅창 본문 */}
       {isChatOpen && (
         <div className="h-[calc(50rem)] flex flex-col">
-          {/* 여기에 채팅 내용 추가 */}
+          {/* 채팅 정보 */}
           <div className="w-full h-[6rem] px-16 py-2 flex justify-center items-center border-b-2 border-lightgray">
             <ChatInfo />
           </div>
 
+          {/* 채팅 내용 */}
           <div className="h-[38rem] flex flex-col-reverse overflow-y-auto gap-2 custom-scrollbar">
             <div className="flex flex-col px-20">
-              {/* 메시지 시작 날짜 들어갈 부분 */}
-              <div>
-                <TodayDate />
-              </div>
+              <TodayDate />
+              <div className=" flex flex-col overflow-y-auto">
+                {messages.map((message) =>
+                  <MessageItem
+                    key={message.id}
+                    message={message.content || ""}
+                    isMine={message.userId === currentUserId} />
+                )}
+              <div ref={messagesEndRef} />
 
-              {/* 메시지 내용 들어갈 부분 */}
-              <div className="flex flex-col overflow-y-auto">
-                {/* 상대방에 보낸 메시지 부분 */}
-                <div className="w-full flex flex-col items-start">
-                  <FriendMessageItem message="안녕" />
-                </div>
-
-                {/* 내가 보낸 메시지 부분 */}
-                <div className="w-full flex flex-col items-end">
-                  {messages.map((message, index) => (
-                    <MessageItem key={index} message={message} />
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
               </div>
             </div>
           </div>
 
+          {/* 메시지 입력 */}
           <div className="h-[6rem] px-20 py-2 flex justify-center items-center">
             <MessageInput onSendMessage={handleSendMessage} />
           </div>

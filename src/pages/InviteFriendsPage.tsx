@@ -1,6 +1,5 @@
 import React from "react";
 import InviteModal from "../components/invitemodal/InviteModal";
-import Navbar from "../components/Navbar";
 
 const InviteFriendsPage: React.FC = () => {
   return (
