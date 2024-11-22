@@ -7,6 +7,14 @@ import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
 import { Link } from "react-router-dom";
 
+interface DayPickerProps {
+  startDate: Date | undefined;
+  setStartDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  endDate: Date | undefined;
+  setEndDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  onConfirm: () => void; // "선택" 버튼 클릭 시 실행될 함수
+}
+
 const MONTHS = [
   "1월",
   "2월",
@@ -22,9 +30,13 @@ const MONTHS = [
   "12월",
 ];
 
-const DayPicker: React.FC = () => {
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined); // 시작 날짜
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined); // 끝 날짜
+const DayPicker: React.FC<DayPickerProps> = ({
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  onConfirm,
+}) => {
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // 현재 연도
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
@@ -50,11 +62,6 @@ const DayPicker: React.FC = () => {
   // 연도 변경 핸들러
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(Number(event.target.value));
-  };
-
-  const selectDate = () => {
-    // 선택된 날짜 처리 로직
-    alert(`선택된 날짜: ${startDate ? startDate.toLocaleDateString() : ""} ~ ${endDate ? endDate.toLocaleDateString() : ""}`);
   };
 
   return (
@@ -117,12 +124,12 @@ const DayPicker: React.FC = () => {
             );
           }}
         />
-        
+
         <div className="button-container">
-          <Link className="button1" onClick={selectDate} to='/invite'>
+          <button className="button1" onClick={onConfirm}>
             선택
-          </Link>
-          <Link className="button2" to='/'>
+          </button>
+          <Link className="button2" to="/">
             지역 다시 선택하기
           </Link>
         </div>
