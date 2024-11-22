@@ -7,13 +7,14 @@ import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
 import LoginForm from "./components/signin/LoginForm";
 import RegisterForm from "./components/signup/RegisterForm";
-import Navbar from "./components/Navbar"; // NavBar 가져오기
+import Navbar from "./components/Navbar";
 import SchedulePage from "./pages/SchedulePage";
 import InviteFriendsPage from "./pages/InviteFriendsPage";
 import SelectDatePage from "./pages/SelectDatePage";
 import MyProfilePage from "./pages/MyProfilePage";
 import MyPlanListPage from "./pages/MyPlanListPage";
 import SelectRegionPage from "./pages/SelectRegionPage";
+import DayPickerPage from "./pages/DayPickerPage";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +33,7 @@ const App: React.FC = () => {
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
           <Route path="/select-region" element={<SelectRegionPage />} />
+          <Route path="/day-picker" element={<DayPickerPage />} />
         </Routes>
       </Router>
     </RecoilRoot>

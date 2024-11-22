@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiSearch, FiXCircle } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -30,6 +31,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [filteredRegions, setFilteredRegions] = useState<Region[]>(regionData);
   const [showSuggestions, setShowSuggestions] = useState(false); // 추천 목록 표시 여부
   const searchBarRef = useRef<HTMLDivElement>(null); // 검색창 외부 클릭 감지를 위한 ref
+  const [travelName, setTravelName] = useState("");
+  const navigate = useNavigate();
+
+  const SelectRegion = (region: string) => {
+    setTravelName(region);
+    navigate("/day-picker", { state: { travelName: region } });
+    console.log("선택된 지역", region);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -128,7 +137,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
               {/* 선택 버튼 */}
               <button
-                onClick={() => handleSearch(region.name)}
+                onClick={() => SelectRegion(region.name)}
                 className="px-4 py-2 bg-lightgray  text-xs rounded-2xl hover:bg-black hover:text-white"
               >
                 선택
