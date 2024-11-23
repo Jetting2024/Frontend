@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { RecoilRoot } from "recoil";
-import SignupPage from "./pages/SignupPage";
 import SigninPage from "./pages/SigninPage";
 import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
@@ -14,6 +13,7 @@ import SelectDatePage from "./pages/SelectDatePage";
 import MyProfilePage from "./pages/MyProfilePage";
 import MyPlanListPage from "./pages/MyPlanListPage";
 import SelectRegionPage from "./pages/SelectRegionPage";
+import OAuth2RedirectHandler from "./auth/OAuth2RedirectHandler";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +32,8 @@ const App: React.FC = () => {
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
           <Route path="/select-region" element={<SelectRegionPage />} />
+          
+          <Route path="/member/kakao/callback" element={<OAuth2RedirectHandler />} />
         </Routes>
       </Router>
     </RecoilRoot>
