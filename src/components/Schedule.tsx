@@ -48,15 +48,19 @@ const Schedule: React.FC<ScheduleProps> = ({
 
   const toggleTimePicker = (id: number) => {
     if (timePickerVisible[id]) {
-      // 시간 저장
+      const savedTime = tempTimeData[id] || {
+        startTime: "설정되지 않음",
+        endTime: "설정되지 않음",
+      };
       setFinalTimeData((prev) => ({
         ...prev,
-        [id]: tempTimeData[id] || {
-          startTime: "설정되지 않음",
-          endTime: "설정되지 않음",
-        },
+        [id]: savedTime,
       }));
+
+      const time = `${savedTime.startTime} ~ ${savedTime.endTime}`;
+      console.log(`ID ${id} 저장된 시간: ${time}`); // 콘솔 출력
     }
+
     setTimePickerVisible((prev) => ({
       ...prev,
       [id]: !prev[id],
@@ -196,7 +200,6 @@ const Schedule: React.FC<ScheduleProps> = ({
               <h3 className="text-lg font-bold">{item.title}</h3>
               <div className="flex items-center gap-4 mt-2">
                 {/* 썸네일 */}
-                <div className="w-16 h-16 bg-gray rounded-lg"></div>
                 <div className="flex flex-col gap-1 w-full">
                   {/* 가게 이름, 시간 */}
                   <div className="flex items-center justify-between">
@@ -216,12 +219,14 @@ const Schedule: React.FC<ScheduleProps> = ({
 
                   {/* TimePicker (시간 선택 팝업) */}
                   {timePickerVisible[item.id] && (
-                    <div className="mt-2 transition-all duration-300">
-                      <TimePicker
-                        onChange={(startTime, endTime) =>
-                          handleTimeChange(item.id, startTime, endTime)
-                        }
-                      />
+                    <div className="flex items-center justify-center mt-4">
+                      <div>
+                        <TimePicker
+                          onChange={(startTime, endTime) =>
+                            handleTimeChange(item.id, startTime, endTime)
+                          }
+                        />
+                      </div>
                     </div>
                   )}
                 </div>

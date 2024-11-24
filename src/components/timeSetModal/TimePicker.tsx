@@ -83,7 +83,7 @@ const TimePicker: React.FC<TimePickerProps> = ({ onChange }) => {
         </div>
 
         {selectedStart && (
-          <div className="absolute top-12">
+          <div className="absolute top-12 bg-white">
             <SelectTime
               onSelect={(time, hour, minute) =>
                 handleSelectTime(time, hour, minute, "start")
