@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import AlertModal from "../components/AlertModal";
+import TimePicker from "../components/timeSetModal/TimePicker";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -34,6 +35,40 @@ const Schedule: React.FC<ScheduleProps> = ({
   );
   const [page, setPage] = useState(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const [timePickerVisible, setTimePickerVisible] = useState<{
+    [id: number]: boolean;
+  }>({});
+  const [tempTimeData, setTempTimeData] = useState<{
+    [id: number]: { startTime: string; endTime: string };
+  }>({});
+  const [finalTimeData, setFinalTimeData] = useState<{
+    [id: number]: { startTime: string; endTime: string };
+  }>({});
+
+  const toggleTimePicker = (id: number) => {
+    if (timePickerVisible[id]) {
+      // 시간 저장
+      setFinalTimeData((prev) => ({
+        ...prev,
+        [id]: tempTimeData[id] || {
+          startTime: "설정되지 않음",
+          endTime: "설정되지 않음",
+        },
+      }));
+    }
+    setTimePickerVisible((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleTimeChange = (id: number, startTime: string, endTime: string) => {
+    setTempTimeData((prev) => ({
+      ...prev,
+      [id]: { startTime, endTime },
+    }));
+  };
 
   //무한 스크롤 함수
   const loadMoreItems = useCallback(() => {
@@ -155,36 +190,50 @@ const Schedule: React.FC<ScheduleProps> = ({
           <p className="text-gray text-sm mt-2">{tripDates}</p>
         </div>
 
-        {/* 일정 목록 표시 */}
         <div className="divide-y divide-gray mt-8">
-          {scheduleData.map((item, index) => (
+          {scheduleData.map((item) => (
             <div key={item.id} className="py-8">
-              <h3 className="text-lg font-bold">{index + 1}일차</h3>
+              <h3 className="text-lg font-bold">{item.title}</h3>
               <div className="flex items-center gap-4 mt-2">
                 {/* 썸네일 */}
                 <div className="w-16 h-16 bg-gray rounded-lg"></div>
                 <div className="flex flex-col gap-1 w-full">
                   {/* 가게 이름, 시간 */}
-                  <div className="flex">
+                  <div className="flex items-center justify-between">
                     <p className="text-[18px] font-bold">{item.title}</p>
-                    <p className="text-[12px] text-gray ml-2 mt-2">
-                      {item.time}
-                    </p>
+                    {isOwner && (
+                      <button
+                        onClick={() => toggleTimePicker(item.id)}
+                        className="text-sm text-gray  hover:text-black"
+                      >
+                        {finalTimeData[item.id]
+                          ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
+                          : "시간 선택"}
+                      </button>
+                    )}
                   </div>
                   <p className="text-sm text-gray">{item.location}</p>
+
+                  {/* TimePicker (시간 선택 팝업) */}
+                  {timePickerVisible[item.id] && (
+                    <div className="mt-2 transition-all duration-300">
+                      <TimePicker
+                        onChange={(startTime, endTime) =>
+                          handleTimeChange(item.id, startTime, endTime)
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {isOwner && (
                 <div className="mt-6 text-center">
                   <button
                     onClick={addLocation}
-                    className="w-full py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white"
+                    className="w-full py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
                   >
                     장소 추가
                   </button>
-                  {/* <button className="ml-4 px-12 py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white">
-                    일정 추가
-                  </button> */}
                 </div>
               )}
             </div>
@@ -195,21 +244,5 @@ const Schedule: React.FC<ScheduleProps> = ({
     </div>
   );
 };
-
-// MainPage에서 일정 컴포넌트를 사용하려면 scheduleData를 전달
-// const MainPage: React.FC = () => {
-//   const scheduleData = [
-//     { id: 1, title: "제주도 도착", time: "10:00 AM", location: "제주공항" },
-//     { id: 2, title: "점심식사", time: "12:00 PM", location: "현지식당" },
-//     { id: 3, title: "한라산 등반", time: "3:00 PM", location: "한라산" },
-//   ];
-
-//   return (
-//     <div>
-//       <Schedule isOwner={true} scheduleData={scheduleData} />
-//     </div>
-//   );
-
-// };
 
 export default Schedule;

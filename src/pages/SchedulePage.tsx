@@ -33,20 +33,20 @@ const SchedulePage: React.FC = () => {
       location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
       photo: "",
     },
-    {
-      id: 2,
-      title: "이치란 본점",
-      time: "AM 10:00~ AM 11:00",
-      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
-      photo: "",
-    },
-    {
-      id: 3,
-      title: "이치란 본점",
-      time: "AM 10:00~ AM 11:00",
-      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
-      photo: "",
-    },
+    // {
+    //   id: 2,
+    //   title: "이치란 본점",
+    //   time: "AM 10:00~ AM 11:00",
+    //   location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
+    //   photo: "",
+    // },
+    // {
+    //   id: 3,
+    //   title: "이치란 본점",
+    //   time: "AM 10:00~ AM 11:00",
+    //   location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
+    //   photo: "",
+    // },
   ];
 
   return (
