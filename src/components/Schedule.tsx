@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { format, differenceInDays, addDays } from "date-fns"; // date-fns 사용
 import AlertModal from "../components/AlertModal";
 import TimePicker from "../components/timeSetModal/TimePicker";
 
@@ -24,6 +25,7 @@ const Schedule: React.FC<ScheduleProps> = ({
   const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
   const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
   const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
+  const [dayLabels, setDayLabels] = useState<string[]>([]); // "n일차" 텍스트 배열
 
   const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 열림 상태
@@ -127,6 +129,18 @@ const Schedule: React.FC<ScheduleProps> = ({
     setIsEditModalOpen(false);
   };
 
+  // 날짜별 "n일차" 생성 로직
+  useEffect(() => {
+    const [start, end] = tripDates.split(" ~ ").map((date) => new Date(date));
+    const numDays = differenceInDays(end, start) + 1;
+
+    const labels = Array.from({ length: numDays }, (_, i) =>
+      format(addDays(start, i), "yyyy-MM-dd")
+    );
+
+    setDayLabels(labels); // 상태 업데이트
+  }, [tripDates]);
+
   return (
     <div className="container mx-auto p-4 h-screen overflow-y-auto">
       <div className="bg-white rounded-2xl p-8 relative">
@@ -195,52 +209,60 @@ const Schedule: React.FC<ScheduleProps> = ({
         </div>
 
         <div className="divide-y divide-gray mt-8">
-          {scheduleData.map((item) => (
-            <div key={item.id} className="py-8">
-              <h3 className="text-lg font-bold">{item.title}</h3>
-              <div className="flex items-center gap-4 mt-2">
-                {/* 썸네일 */}
-                <div className="flex flex-col gap-1 w-full">
-                  {/* 가게 이름, 시간 */}
-                  <div className="flex items-center justify-between">
-                    <p className="text-[18px] font-bold">{item.title}</p>
-                    {isOwner && (
-                      <button
-                        onClick={() => toggleTimePicker(item.id)}
-                        className="text-sm text-gray  hover:text-black"
-                      >
-                        {finalTimeData[item.id]
-                          ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
-                          : "시간 선택"}
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray">{item.location}</p>
+          {dayLabels.map((dayLabel, index) => (
+            <div key={index} className="py-8">
+              <h3 className="text-lg font-bold">{index + 1}일차</h3>
+              <p className="text-sm text-gray">{dayLabel}</p>
+              <div className="flex flex-col gap-4 mt-2">
+                {/* 각 날짜에 해당하는 세부 일정 표시 */}
+                {scheduleData
+                  .filter((item) => item.id === index) // 날짜별 데이터 필터링
+                  .map((item) => (
+                    <div key={item.id} className="flex items-center gap-4 mt-2">
+                      {/* 썸네일 */}
+                      <div className="flex flex-col gap-1 w-full">
+                        {/* 가게 이름, 시간 */}
+                        <div className="flex items-center justify-between">
+                          <p className="text-[18px] font-bold">{item.title}</p>
+                          {isOwner && (
+                            <button
+                              onClick={() => toggleTimePicker(item.id)}
+                              className="text-sm text-gray  hover:text-black"
+                            >
+                              {finalTimeData[item.id]
+                                ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
+                                : "시간 선택"}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray">{item.location}</p>
 
-                  {/* TimePicker (시간 선택 팝업) */}
-                  {timePickerVisible[item.id] && (
-                    <div className="flex items-center justify-center mt-4">
-                      <div>
-                        <TimePicker
-                          onChange={(startTime, endTime) =>
-                            handleTimeChange(item.id, startTime, endTime)
-                          }
-                        />
+                        {/* TimePicker (시간 선택 팝업) */}
+                        {timePickerVisible[item.id] && (
+                          <div className="flex items-center justify-center mt-4">
+                            <div>
+                              <TimePicker
+                                onChange={(startTime, endTime) =>
+                                  handleTimeChange(item.id, startTime, endTime)
+                                }
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
+                  ))}
+                {isOwner && (
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={addLocation}
+                      className="w-full py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
+                    >
+                      장소 추가
+                    </button>
+                  </div>
+                )}
               </div>
-              {isOwner && (
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={addLocation}
-                    className="w-full py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
-                  >
-                    장소 추가
-                  </button>
-                </div>
-              )}
             </div>
           ))}
           <div ref={lastItemRef} className="h-1" />
