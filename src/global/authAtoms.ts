@@ -1,6 +1,12 @@
 import { atom } from "recoil";
 
-export const authState = atom({
+interface AuthState {
+    isAuthenticated: boolean;
+    accessToken: string | null;
+    refreshToken: string | null;
+}
+
+export const authState = atom<AuthState>({
     key: "authState",
     default: {
         isAuthenticated: !!localStorage.getItem("accessToken"),
