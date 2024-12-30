@@ -13,8 +13,8 @@ const MyProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen relative">
-      <div className=" absolute inset-0 flex justify-center items-center">
+    <div className="w-full h-[clac(100vh-56px)] relative">
+      <div className="flex justify-center items-center">
         <div className="w-[500px] h-[517px] p-4 gap-16 flex flex-col justify-center items-center">
           {/* 프로필 사진 업로드하기 */}
           <div className="relative">
