@@ -12,11 +12,7 @@ const WebSocketTest: React.FC = () => {
 
     useEffect(() => {
         const stompClient = new Client({
-<<<<<<< Updated upstream
-        brokerURL: "http://localhost:8080/ws",
-=======
         brokerURL: "ws://localhost:8080/ws",
->>>>>>> Stashed changes
         onConnect: () => {
             console.log("connected to websocket");
 

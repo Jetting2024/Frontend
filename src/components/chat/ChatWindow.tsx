@@ -2,20 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa6";
 import { IoPersonAddOutline } from "react-icons/io5";
 import ChatInfo from "./ChatInfo";
-<<<<<<< Updated upstream
-import MessageInput from "./InputField/MessageInput";
-import MessageItem from "./MessageContainer/MyMessageItem";
-=======
-<<<<<<< Updated upstream
-import MessageInput from "./MessageInput";
-import MessageItem from "./MyMessageItem";
->>>>>>> Stashed changes
-import TodayDate from "./TodayDate";
 import FriendMessageItem from "./MessageContainer/FriendMessageItem";
 import './custom.css';
-=======
-import MessageInput from "./InputField/MessageInput";
-import MessageItem from "./MessageContainer/MessageItem";
+import MessageInput from "./MessageInput";
+import MessageItem from "./MessageItem";
 import TodayDate from "./TodayDate";
 import "./custom.css";
 import { Client } from "@stomp/stompjs";
@@ -60,7 +50,6 @@ const dummyChatData: ChatMessage[] = [
     timestamp: new Date().toISOString(),
   },
 ];
->>>>>>> Stashed changes
 
 const ChatWindow: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
