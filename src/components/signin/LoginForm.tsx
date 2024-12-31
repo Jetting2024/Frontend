@@ -3,6 +3,8 @@ import TextField from "../TextField";
 import { CiLock, CiMail } from "react-icons/ci";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -13,9 +15,9 @@ const LoginForm: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const signInHandler = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const setAuth = useSetRecoilState(authState);
 
+  const signInHandler = async () => {
     if (!emailRegex.test(email)) {
       setErrorMessage("올바른 이메일 형식을 입력해주세요.");
       return;
@@ -27,11 +29,14 @@ const LoginForm: React.FC = () => {
         password: password,
       });
 
-      localStorage.setItem(
-        "accessToken",
-        response.data.result.jwtToken.accessToken
-      );
-      localStorage.setItem("userId", response.data.result.idx);
+      const { accessToken, refreshToken } = response.data.result.jwtToken;
+      const id = response.data.result.idx; // 추후에 수정 될 부분
+
+      localStorage.setItem("id", id);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      setAuth({ isAuthenticated: true, id, accessToken, refreshToken });
 
       navigate("/");
     } catch (error: any) {
@@ -55,10 +60,7 @@ const LoginForm: React.FC = () => {
 
   return (
     <section className="w-[500px] h-auto flex flex-col justify-between items-center">
-      <form
-        className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5"
-        onSubmit={signInHandler}
-      >
+      <form className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5">
         <h2 className="mt-5">시작하기</h2>
         <TextField
           type="email"
@@ -83,7 +85,10 @@ const LoginForm: React.FC = () => {
           </Link>
         </div>
 
-        <div className="w-[364px] h-10 flex justify-center items-center rounded-lg bg-black mb-5 hover:bg-gray">
+        <div
+          className="w-[364px] h-10 flex justify-center items-center rounded-lg bg-black mb-5 hover:bg-gray"
+          onClick={signInHandler}
+        >
           <button className="text-sm text-white" disabled={!email || !password}>
             로그인
           </button>

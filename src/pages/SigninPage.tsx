@@ -13,12 +13,6 @@ const SigninPage: React.FC = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
-  const setAuth = useSetRecoilState(authState);
-
-  const KakaoLogin = async () => {
-    navigate("/member/kakao/callback");
-  };
-
   const LoginClick = () => {
     navigate("/login");
   };

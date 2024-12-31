@@ -20,6 +20,8 @@ const OAuth2RedirectHandler: React.FC = () => {
 
   useEffect(() => {
     if (!authCode || isRequestSent) return; // 중복 호출 방지
+
+    console.log(authCode);
     
     const handleLogin = async () => {
       try {
@@ -34,6 +36,8 @@ const OAuth2RedirectHandler: React.FC = () => {
         localStorage.setItem("id", id);
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
+
+        console.log("response: ", response);
         
         // Recoil 상태 설정 (로그인 상태로 설정)
         setAuth({ isAuthenticated: true, id, accessToken, refreshToken });
