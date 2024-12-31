@@ -119,7 +119,7 @@ const DayPicker: React.FC = () => {
         />
         
         <div className="button-container">
-          <Link className="button1" onClick={selectDate} to='/invite'>
+          <Link className="button1" onClick={selectDate} to='/make-room'>
             선택
           </Link>
           <Link className="button2" to='/'>

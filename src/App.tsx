@@ -14,6 +14,7 @@ import MyProfilePage from "./pages/MyProfilePage";
 import MyPlanListPage from "./pages/MyPlanListPage";
 import SelectRegionPage from "./pages/SelectRegionPage";
 import OAuth2RedirectHandler from "./auth/OAuth2RedirectHandler";
+import MakeChatPage from "./pages/MakeChatPage";
 
 const App: React.FC = () => {
   return (
@@ -32,6 +33,8 @@ const App: React.FC = () => {
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
           <Route path="/select-region" element={<SelectRegionPage />} />
+          <Route path="/make-room" element={<MakeChatPage />} />
+          
           
           <Route path="/member/kakao/callback" element={<OAuth2RedirectHandler />} />
         </Routes>
