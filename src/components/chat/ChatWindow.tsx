@@ -163,7 +163,7 @@ const ChatWindow: React.FC = () => {
         {isChatOpen && (
           <button className="flex items-center gap-2">
             <div className="mt-1 text-gray">멤버 초대하기</div>
-            <IoPersonAddOutline fill="#959595" />
+            <IoPersonAddOutline />
           </button>
         )}
       </div>

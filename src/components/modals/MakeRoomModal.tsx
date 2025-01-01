@@ -1,17 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IoCloseCircleOutline } from "react-icons/io5";
 
 const MakeRoomModal: React.FC = () => {
   const [roomName, setRoomName] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const fullDate = location.state?.fullDate;
 
   const handleComplete = () => {
     if (!roomName.trim()) {
       alert("채팅방 이름을 입력해주세요.");
       return;
     }
-    navigate("/invite", { state: { roomName } });
+    navigate("/invite", { state: { fullDate, roomName } });
   };
 
   return (

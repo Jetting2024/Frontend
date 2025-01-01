@@ -15,6 +15,7 @@ const InviteModal: React.FC = () => {
 
   const userId = sessionStorage.getItem("id");
   const member = "유지원, 조윤주";
+  const date = location.state?.fullDate;
   const name = location.state?.roomName;
 
   const readAuthState = useRecoilValue(authState);
@@ -48,11 +49,8 @@ const InviteModal: React.FC = () => {
         const userId = readAuthState.id;
         const member = roomInfo.data.result.member;
         const roomName = roomInfo.data.result.roomName;
-
-        console.log("member: ", member);
-        console.log("roomName: ", roomName);
       
-        setChatRoomInfo({roomId, userId, member, roomName});
+        setChatRoomInfo({roomId, userId, member, roomName, date});
       }
       navigate('/schedule');
       
