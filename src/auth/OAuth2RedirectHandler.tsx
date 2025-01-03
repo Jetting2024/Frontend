@@ -20,6 +20,8 @@ const OAuth2RedirectHandler: React.FC = () => {
 
   useEffect(() => {
     if (!authCode || isRequestSent) return; // 중복 호출 방지
+
+    console.log(authCode);
     
     const handleLogin = async () => {
       try {
@@ -31,22 +33,30 @@ const OAuth2RedirectHandler: React.FC = () => {
         const { accessToken, refreshToken } = response.data.result.jwtToken;
         const id = response.data.result.idx; // 추후에 수정 될 부분
         
-        localStorage.setItem("id", id);
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
+        sessionStorage.setItem("id", id);
+        sessionStorage.setItem("accessToken", accessToken);
+        sessionStorage.setItem("refreshToken", refreshToken);
+
+        console.log("response: ", response);
         
         // Recoil 상태 설정 (로그인 상태로 설정)
-        setAuth({ isAuthenticated: true, id, accessToken, refreshToken });
-
+        
         const memberInfo = await axios.get(
-          `http://localhost:8080/member/info/${id}`,
+          `http://localhost:8080/member/getInfo`,
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
 
+        console.log(memberInfo);
+        
         const userName = memberInfo.data.result.name;
-        localStorage.setItem("name", userName);
+        const image = memberInfo.data.result.image;
+        
+        sessionStorage.setItem("name", userName);
+        sessionStorage.setItem("image", image);
+
+        setAuth({ isAuthenticated: true, id, accessToken, refreshToken, image });
 
         navigator("/");
         

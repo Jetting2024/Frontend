@@ -6,6 +6,7 @@ import {
   FaChevronUp,
 } from "react-icons/fa"; // 아이콘 추가
 import Schedule from "../components/Schedule";
+import ChatWindow from "../components/chat/ChatWindow";
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -106,7 +107,8 @@ const SchedulePage: React.FC = () => {
         </div>
       </div>
       {/* 채팅 세션 */}
-      <div className="flex-1 relative">
+      <ChatWindow />
+      {/* <div className="flex-1 relative">
         <div className="w-1/3"></div>
         <div
           className={`${
@@ -125,7 +127,7 @@ const SchedulePage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

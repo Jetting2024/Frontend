@@ -4,8 +4,11 @@ import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불�
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import WebSocketTest from "../components/webSocketTest";
+import { authState } from "../global/recoil/authAtoms";
+import { useRecoilValue } from "recoil";
 
 const HomePage: React.FC = () => {
+  const auth = useRecoilValue(authState);
   const navigate = useNavigate();
   const handleSearch = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation(); // 이벤트 버블링 방지
@@ -39,8 +42,8 @@ const HomePage: React.FC = () => {
     if (scrollElement) {
       scrollElement.addEventListener("scroll", handleScroll);
     }
-
     return () => scrollElement?.removeEventListener("scroll", handleScroll);
+
   }, []);
 
   return (

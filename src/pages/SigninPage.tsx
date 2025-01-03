@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SiKakaotalk } from "react-icons/si";
 import teamworkImage from "../assets/teamwork.png";
+import { useSetRecoilState } from "recoil";
+import { authState } from "../global/recoil/authAtoms";
 import { KAKAO_AUTH_URL } from "../auth/OAuth";
 
 const SigninPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
 
   const LoginClick = () => {
     navigate("/login");

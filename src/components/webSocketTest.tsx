@@ -1,117 +1,102 @@
+import React, { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
-import React, { useState, useEffect } from "react";
+import { useRecoilValue } from "recoil";
+import { chatRoomState } from "../global/recoil/atoms";
+import { authState } from "../global/recoil/authAtoms";
 
-const WebSocketTest: React.FC = () => {
-    const [roomId, setRoomId] = useState<number>(1);
-    const [userId, setUserId] = useState<number>(4);
-    const [message, setMessage] = useState<string>("");
-    const [client, setClient] = useState<Client | null>(null);
-    const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
-    const [isConnected, setIsConnected] = useState<boolean>(false);
-    
+const WebSockectTest: React.FC = () => {
+  const readRoomInfo = useRecoilValue(chatRoomState);
+  const readAuthInfo = useRecoilValue(authState);
+  const clientRef = useRef<Client | null>(null);
 
-    useEffect(() => {
-        const stompClient = new Client({
-        brokerURL: "http://localhost:8080/ws",
-        onConnect: () => {
-            console.log("connected to websocket");
+  const [messages, setMessages] = useState<string[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<string>("Disconnected");
+  const [newMessage, setNewMessage] = useState<string>("");
 
-            stompClient.subscribe(`/sub/chat/room/${roomId}`, (message) => {
-            console.log("Received:", message.body);
-            setReceivedMessages((prev) => [...prev, message.body]);
-            });
+  useEffect(() => {
+    // if (!5) return;
 
-            setIsConnected(true);
-        },
-        onDisconnect: () => {
-            console.log("Disconnected from WebSocket");
-            setIsConnected(false);
-        },
-        onStompError: (error) => {
-            console.error("STOMP ERROR: ", error);
-        },
+    const stompClient = new Client({
+      brokerURL: "ws://localhost:8080/ws",
+      connectHeaders: {
+        Authorization: `Bearer ${readAuthInfo.accessToken}`,
+      },
+      onConnect: () => {
+        console.log(`[STOMP] Connected to room ${5}`);
+        setConnectionStatus("Connected");
+        console.log("여기1");
+
+        // 메시지 구독
+        stompClient.subscribe(`/sub/chat/room/5`, (message) => {
+          console.log("여기2");
+          const receivedMessage = message.body;
+          console.log(`[STOMP] Received message: `, receivedMessage);
+          setMessages((prev) => [...prev, receivedMessage]);
         });
+      },
+      onDisconnect: () => {
+        console.log("[STOMP] Disconnected");
+        setConnectionStatus("Disconnected");
+      },
+      onStompError: (error) => {
+        console.error("[STOMP] Error: ", error);
+        setConnectionStatus("Error");
+      },
+    });
 
-        stompClient.activate(); // 클라이언트 활성화
-        setClient(stompClient);
+    stompClient.activate();
+    clientRef.current = stompClient;
 
-        return () => {
-        stompClient.deactivate();
-        };
-    }, []);
-
-    const sendMessage = () => {
-        const chatMessage = {
-        roomId: roomId,
-        userId: userId,
-        message: message,
-        };
-        if (client && client.connected) {
-        client.publish({
-            destination: `/pub/sendMessage`,
-            body: JSON.stringify(chatMessage), // 객체를 문자열로 변환
-        });
-        console.log("Message sent: ", message);
-        } else {
-        console.log("STOMP client is not connected");
-        }
+    return () => {
+      stompClient.deactivate();
+      console.log("[STOMP] Connection closed");
     };
+  }, [5, readAuthInfo.accessToken]);
 
-    return (
-            <div>
-                <h2>WebSocket Test</h2>
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return; // 공백 메시지 방지
 
-                {/* 방 ID와 사용자 ID 설정 */}
-                <div>
-                    <label>
-                    Room ID:
-                    <input
-                        type="number"
-                        value={roomId}
-                        onChange={(e) => setRoomId(Number(e.target.value))}
-                    />
-                    </label>
-                    <label>
-                    User ID:
-                    <input
-                        type="number"
-                        value={userId}
-                        onChange={(e) => setUserId(Number(e.target.value))}
-                    />
-                    </label>
-                </div>
+    if (clientRef.current && clientRef.current.connected) {
+      const chatMessage = {
+        userId: readAuthInfo.id,
+        roomId: 5,
+        message: newMessage,
+      };
 
-                {/* 연결 상태 표시 */}
-                <div>
-                    {isConnected ? (
-                    <p>Connected to WebSocket server</p>
-                    ) : (
-                    <p>Not connected</p>
-                    )}
-                </div>
+      clientRef.current.publish({
+        destination: `/pub/sendMessage`,
+        body: JSON.stringify(chatMessage),
+      });
 
-                {/* 메시지 전송 */}
-                <div>
-                    <input
-                    type="text"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter message"
-                    />
-                    <button onClick={sendMessage}>Send Message</button>
-                </div>
+      setNewMessage(""); // 입력 필드 초기화
+    } else {
+      console.error("[STOMP] WebSocket is not connected");
+    }
+  };
 
-                {/* 받은 메시지 표시 */}
-                <div>
-                    <h3>Received Messages:</h3>
-                    <ul>
-                    {receivedMessages.map((msg, idx) => (
-                        <li key={idx}>{msg}</li>
-                    ))}
-                    </ul>
-                </div>
-            </div>
-    );
+  return (
+    <div>
+      <h1>Chat Room: {5}</h1>
+      <h2>Connection Status: {connectionStatus}</h2>
+      <div>
+        <h3>Messages</h3>
+        <div>
+          {messages.map((msg, index) => (
+            <p key={index}>{msg}</p>
+          ))}
+        </div>
+      </div>
+      <div>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message"
+        />
+        <button onClick={handleSendMessage}>Send</button>
+      </div>
+    </div>
+  );
 };
 
-export default WebSocketTest;
+export default WebSockectTest;

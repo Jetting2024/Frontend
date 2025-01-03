@@ -3,76 +3,97 @@ import TextField from "../TextField";
 import { CiLock, CiMail } from "react-icons/ci";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../global/axios";
+import { useSetRecoilState } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
+  const setAuth = useSetRecoilState(authState);
 
-  const signInHandler = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCredentials((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (!emailRegex.test(email)) {
+  const validateEmail = (email: string): boolean => emailRegex.test(email);
+
+  const signInHandler = async () => {
+    const { email, password } = credentials;
+
+    if (!validateEmail(email)) {
       setErrorMessage("올바른 이메일 형식을 입력해주세요.");
       return;
     }
 
     try {
       const response = await axios.post("http://localhost:8080/member/login", {
-        email: email,
-        password: password,
+        email,
+        password,
       });
 
-      localStorage.setItem(
-        "accessToken",
-        response.data.result.jwtToken.accessToken
+      const { accessToken, refreshToken } = response.data.result.jwtToken;
+      const id = response.data.result.idx; // 추후에 수정 될 부분
+
+      sessionStorage.setItem("id", id);
+      sessionStorage.setItem("accessToken", accessToken);
+      sessionStorage.setItem("refreshToken", refreshToken);
+
+      
+      const memberInfo = await axios.get(
+        `http://localhost:8080/member/getInfo`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
       );
-      localStorage.setItem("userId", response.data.result.idx);
+      
+      const userName = memberInfo.data.result.name;
+      const image = memberInfo.data.result.image;
+      
+      sessionStorage.setItem("name", userName);
+      sessionStorage.setItem("image", image);
+      
+      setAuth({ isAuthenticated: true, id, accessToken, refreshToken, image });
 
       navigate("/");
     } catch (error: any) {
-      if (error.response) {
-        const { errorCode } = error.response.data;
-        if (errorCode === 501) {
-          setErrorMessage("존재하지 않는 이메일입니다.");
-        } else {
-          setErrorMessage(
-            "로그인에 실패하였습니다. 이메일과 비밀번호를 확인해주세요."
-          );
-        }
-      } else {
-        setErrorMessage(
-          "로그인에 실패하였습니다. 이메일과 비밀번호를 확인해주세요."
-        );
-        console.error(error);
-      }
+      const errorCode = error?.response?.data?.errorCode;
+
+      const errorMessages: Record<number, string> = {
+        501: "존재하지 않는 이메일입니다.",
+        502: "잘못된 비밀번호입니다.",
+      };
+
+      setErrorMessage(
+        errorMessages[errorCode] ||
+          "로그인에 실패하였습니다. 다시 시도해주세요."
+      );
     }
   };
 
   return (
     <section className="w-[500px] h-auto flex flex-col justify-between items-center">
-      <form
-        className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5"
-        onSubmit={signInHandler}
-      >
+      <form className="flex-1 w-[380px] flex flex-col justify-center items-center gap-5">
         <h2 className="mt-5">시작하기</h2>
         <TextField
           type="email"
+          name="email"
           icon={CiMail}
           placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={credentials.email}
+          onChange={handleInputChange}
         />
         <TextField
           type="password"
+          name="password"
           icon={CiLock}
           placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={credentials.password}
+          onChange={handleInputChange}
         />
         {errorMessage && (
           <div className="text-red-500 text-sm self-start">{errorMessage}</div>
@@ -83,8 +104,17 @@ const LoginForm: React.FC = () => {
           </Link>
         </div>
 
-        <div className="w-[364px] h-10 flex justify-center items-center rounded-lg bg-black mb-5 hover:bg-gray">
-          <button className="text-sm text-white" disabled={!email || !password}>
+        <div
+          className="w-[364px] h-10 flex justify-center items-center rounded-lg bg-black mb-5 hover:bg-gray"
+          onClick={(e) => {
+            e.preventDefault();
+            signInHandler();
+          }}
+        >
+          <button
+            className="text-sm text-white"
+            disabled={!credentials.email || !credentials.password}
+          >
             로그인
           </button>
         </div>
