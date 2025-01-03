@@ -12,11 +12,9 @@ import { authState } from "../../global/recoil/authAtoms";
 import axios from "axios";
 
 interface ChatMessage {
-  id: string;
-  userId: string | null;
   roomId: string;
-  content: string | null;
-  timestamp: string;
+  userId: string | null;
+  message: string | null;
 }
 
 const ChatWindow: React.FC = () => {
@@ -24,6 +22,10 @@ const ChatWindow: React.FC = () => {
 
   const readRoomInfo = useRecoilValue(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
+
+  const roomId = "5"; // 임시 방편 !!!!!!!!!!!!!!!!!!!!!!!!!
+  const [connectionStatus, setConnectionStatus] =
+    useState<string>("Disconnected.");
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -36,26 +38,24 @@ const ChatWindow: React.FC = () => {
   };
 
   const handleSendMessage = (newMessage: string) => {
-    if (!readRoomInfo.roomId) {
-      console.error("roomId is null. Cannot send a message.");
-      return;
-    }
+    // if (!readRoomInfo.roomId) {
+    //   console.error("roomId is null. Cannot send a message.");
+    //   return;
+    // }
 
     if (newMessage === "") {
       return;
     }
 
     const chatMessage: ChatMessage = {
-      id: `${Date.now()}`,
+      roomId: roomId,
       userId: readAuthInfo.id,
-      roomId: readRoomInfo.roomId,
-      content: newMessage,
-      timestamp: new Date().toISOString(),
+      message: newMessage,
     };
 
     if (clientRef.current && clientRef.current.connected) {
       clientRef.current.publish({
-        destination: `/pub/sendMessage/${readRoomInfo.roomId}`,
+        destination: `/pub/sendMessage/${roomId}`,
         body: JSON.stringify(chatMessage),
       });
       setMessages((prev) => [...prev, chatMessage]);
@@ -64,48 +64,41 @@ const ChatWindow: React.FC = () => {
     }
   };
 
-  const subscriber = (newRoomId: string | null) => {
-    if (clientRef.current && clientRef.current.connected) {
-      if (subscriptionRef.current) {
-        clientRef.current.unsubscribe(subscriptionRef.current);
-        subscriptionRef.current = null;
-      }
-
-      if (newRoomId) {
-        const subscription = clientRef.current.subscribe(
-          `/sub/chat/room/${newRoomId}`,
-          (message) => {
-            const receivedMessage: ChatMessage = JSON.parse(message.body);
-            setMessages((prev) => [...prev, receivedMessage]);
-          }
-        );
-        subscriptionRef.current = subscription.id;
-      }
-    } else {
-      console.error("WebSocket is not connected. Cannot switch rooms.");
-    }
-  };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
-    if (!readRoomInfo.roomId) {
+    if (!roomId) {
       return;
     }
 
     const stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws",
+      debug: (str) => console.log(`[STOMP DEBUG]: ${str}`),
       onConnect: () => {
-        console.log("connected to websocket");
-        subscriber(readRoomInfo.roomId);
+        console.log(`[STOMP] Connected to room ${roomId}.`);
+        setConnectionStatus("Connected.");
+
+        // 메시지 구독
+        const subscription = stompClient.subscribe(
+          `/sub/chat/room/${roomId}`,
+          (message) => {
+            const receivedMessage: ChatMessage = JSON.parse(message.body);
+            console.log("[STOMP] Message received:", receivedMessage);
+            setMessages((prev) => [...prev, receivedMessage]);
+          }
+        );
+
+        subscriptionRef.current = subscription.id;
       },
       onDisconnect: () => {
-        console.log("Disconnected from WebSocket");
+        console.log("[STOMP] Disconnected.");
+        setConnectionStatus("Disconnected.");
       },
       onStompError: (error) => {
-        console.error("STOMP ERROR: ", error);
+        console.error("[STOMP] ERROR: ", error);
+        setConnectionStatus("Error");
       },
     });
 
@@ -114,14 +107,15 @@ const ChatWindow: React.FC = () => {
 
     return () => {
       stompClient.deactivate();
+      console.log("[STOMP] Connection closed.");
     };
-  }, [readRoomInfo.roomId]);
+  }, [roomId, readAuthInfo.accessToken]);
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/chat/${readRoomInfo.roomId}/getMessages`,
+          `http://localhost:8080/chat/${roomId}/getMessages`,
           {
             headers: {
               Authorization: `Bearer ${readAuthInfo.accessToken}`,
@@ -143,7 +137,7 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
+  }, [roomId, readAuthInfo.accessToken]);
 
   return (
     <section
@@ -185,8 +179,7 @@ const ChatWindow: React.FC = () => {
               <div className="flex flex-col overflow-y-auto">
                 {messages.map((message) => (
                   <MessageItem
-                    key={message.id}
-                    message={message.content || ""}
+                    message={message.message || ""}
                     isMine={message.userId === readAuthInfo.id}
                   />
                 ))}

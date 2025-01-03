@@ -104,7 +104,7 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
         password: password,
       });
       if (response.data.success) {
-        localStorage.setItem("loginEmail", email);
+        sessionStorage.setItem("loginEmail", email);
         navigate("/login");
       } else {
         alert("회원가입에 실패하였습니다. 다시 시도해주세요.");

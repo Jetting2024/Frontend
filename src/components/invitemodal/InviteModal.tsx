@@ -11,7 +11,7 @@ const InviteModal: React.FC = () => {
 
   const setChatRoomInfo = useSetRecoilState(chatRoomState);
 
-  const userId = localStorage.getItem("id");
+  const userId = sessionStorage.getItem("id");
   const member = "유지원, 조윤주";
   const name = "두근두근 나트랑 여행";
 

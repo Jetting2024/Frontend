@@ -14,7 +14,7 @@ module.exports = (app: Application) => {
 
     // WebSocket 요청 프록시
     app.use(
-        "/ws",
+        "ws",
         createProxyMiddleware({
             target: "http://localhost:8080",
             ws: true,
