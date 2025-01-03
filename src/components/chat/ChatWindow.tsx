@@ -12,20 +12,17 @@ import { authState } from "../../global/recoil/authAtoms";
 import axios from "axios";
 
 interface ChatMessage {
-  roomId: string;
+  roomId: string | null;
   userId: string | null;
   message: string | null;
 }
 
 const ChatWindow: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
-
+  
   const readRoomInfo = useRecoilValue(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
-
-  const roomId = "5"; // 임시 방편 !!!!!!!!!!!!!!!!!!!!!!!!!
-  const [connectionStatus, setConnectionStatus] =
-    useState<string>("Disconnected.");
+  const roomId = readRoomInfo.roomId;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -38,27 +35,23 @@ const ChatWindow: React.FC = () => {
   };
 
   const handleSendMessage = (newMessage: string) => {
-    // if (!readRoomInfo.roomId) {
-    //   console.error("roomId is null. Cannot send a message.");
-    //   return;
-    // }
-
-    if (newMessage === "") {
+    if (!readRoomInfo.roomId) {
+      console.error("roomId is null. Cannot send a message.");
       return;
     }
 
     const chatMessage: ChatMessage = {
-      roomId: roomId,
+      roomId: readRoomInfo.roomId,
       userId: readAuthInfo.id,
       message: newMessage,
     };
 
     if (clientRef.current && clientRef.current.connected) {
       clientRef.current.publish({
-        destination: `/pub/sendMessage/${roomId}`,
+        destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
       });
-      setMessages((prev) => [...prev, chatMessage]);
+
     } else {
       console.log("WebSocket is not connected.");
     }
@@ -69,7 +62,7 @@ const ChatWindow: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (!roomId) {
+    if (!readRoomInfo.roomId) {
       return;
     }
 
@@ -77,16 +70,26 @@ const ChatWindow: React.FC = () => {
       brokerURL: "ws://localhost:8080/ws",
       debug: (str) => console.log(`[STOMP DEBUG]: ${str}`),
       onConnect: () => {
-        console.log(`[STOMP] Connected to room ${roomId}.`);
-        setConnectionStatus("Connected.");
+        console.log(`[STOMP] Connected to room ${readRoomInfo.roomId}.`);
+
 
         // 메시지 구독
         const subscription = stompClient.subscribe(
-          `/sub/chat/room/${roomId}`,
+          `/sub/chat/room/${readRoomInfo.roomId}`,
           (message) => {
-            const receivedMessage: ChatMessage = JSON.parse(message.body);
-            console.log("[STOMP] Message received:", receivedMessage);
-            setMessages((prev) => [...prev, receivedMessage]);
+            try {
+              // 메시지가 JSON인지 확인하고 파싱
+              const receivedMessage = JSON.parse(message.body);
+              console.log("[STOMP] JSON Message received:", receivedMessage);
+              setMessages((prev) => [...prev, receivedMessage]);
+            } catch (error) {
+              // JSON 파싱 실패 시 메시지를 문자열로 처리
+              console.warn("[STOMP] Non-JSON Message received:", message.body);
+              setMessages((prev) => [
+                ...prev,
+                { roomId: readRoomInfo.roomId, userId: readAuthInfo.id, message: message.body },
+              ]);
+            }
           }
         );
 
@@ -94,11 +97,9 @@ const ChatWindow: React.FC = () => {
       },
       onDisconnect: () => {
         console.log("[STOMP] Disconnected.");
-        setConnectionStatus("Disconnected.");
       },
       onStompError: (error) => {
         console.error("[STOMP] ERROR: ", error);
-        setConnectionStatus("Error");
       },
     });
 
@@ -109,13 +110,13 @@ const ChatWindow: React.FC = () => {
       stompClient.deactivate();
       console.log("[STOMP] Connection closed.");
     };
-  }, [roomId, readAuthInfo.accessToken]);
+  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/chat/${roomId}/getMessages`,
+          `http://localhost:8080/chat/${readRoomInfo.roomId}/getMessages`,
           {
             headers: {
               Authorization: `Bearer ${readAuthInfo.accessToken}`,
@@ -137,7 +138,7 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [roomId, readAuthInfo.accessToken]);
+  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
 
   return (
     <section

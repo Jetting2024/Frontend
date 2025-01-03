@@ -21,14 +21,15 @@ const WebSockectTest: React.FC = () => {
       connectHeaders: {
         Authorization: `Bearer ${readAuthInfo.accessToken}`,
       },
-      debug: (str) => console.log(`[STOMP DEBUG]: ${str}`), // 디버그 로그
       onConnect: () => {
         console.log(`[STOMP] Connected to room ${5}`);
         setConnectionStatus("Connected");
+        console.log("여기1");
 
         // 메시지 구독
-        stompClient.subscribe(`/sub/chat/room/${5}`, (message) => {
-          const receivedMessage = JSON.parse(message.body);
+        stompClient.subscribe(`/sub/chat/room/5`, (message) => {
+          console.log("여기2");
+          const receivedMessage = message.body;
           console.log(`[STOMP] Received message: `, receivedMessage);
           setMessages((prev) => [...prev, receivedMessage]);
         });
@@ -59,16 +60,14 @@ const WebSockectTest: React.FC = () => {
       const chatMessage = {
         userId: readAuthInfo.id,
         roomId: 5,
-        content: newMessage,
-        timestamp: new Date().toISOString(),
+        message: newMessage,
       };
 
       clientRef.current.publish({
-        destination: `/pub/sendMessage/${5}`,
+        destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
       });
 
-      setMessages((prev) => [...prev, newMessage]);
       setNewMessage(""); // 입력 필드 초기화
     } else {
       console.error("[STOMP] WebSocket is not connected");
