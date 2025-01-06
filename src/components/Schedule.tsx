@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { format, differenceInDays, addDays } from "date-fns"; // date-fns 사용
 import AlertModal from "../components/AlertModal";
 import TimePicker from "../components/timeSetModal/TimePicker";
+import DirectInputButton from "../components/DirectInputButton";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -11,7 +12,6 @@ interface ScheduleProps {
 
 interface ScheduleItem {
   id: number;
-  photo: string;
   title: string;
   time: string;
   location: string;
@@ -19,7 +19,7 @@ interface ScheduleItem {
 
 const Schedule: React.FC<ScheduleProps> = ({
   isOwner,
-  scheduleData,
+  //scheduleData,
   addLocation,
 }) => {
   const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
@@ -32,9 +32,10 @@ const Schedule: React.FC<ScheduleProps> = ({
   const [modalType, setModalType] = useState(""); // 수정할 항목을 저장 (참여자, 제목, 날짜)
   const [editValue, setEditValue] = useState(""); // 수정할 값
 
-  const [displayedData, setDisplayedData] = useState<ScheduleItem[]>(
-    scheduleData.slice(0, 10)
-  );
+  const [scheduleData, setScheduleData] = useState<{
+    [dayIndex: number]: ScheduleItem[];
+  }>({});
+
   const [page, setPage] = useState(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -60,7 +61,7 @@ const Schedule: React.FC<ScheduleProps> = ({
       }));
 
       const time = `${savedTime.startTime} ~ ${savedTime.endTime}`;
-      console.log(`ID ${id} 저장된 시간: ${time}`); // 콘솔 출력
+      console.log(`ID ${id} 저장된 시간: ${time}`); // 콘솔
     }
 
     setTimePickerVisible((prev) => ({
@@ -76,11 +77,21 @@ const Schedule: React.FC<ScheduleProps> = ({
     }));
   };
 
-  //무한 스크롤 함수
   const loadMoreItems = useCallback(() => {
-    const nextItems = scheduleData.slice(page * 10, (page + 1) * 10);
+    const allItems = Object.values(scheduleData).flat(); // 객체의 값을 배열로 변환 후 평탄화
+    const nextItems = allItems.slice(page * 10, (page + 1) * 10);
+
     if (nextItems.length > 0) {
-      setDisplayedData((prev) => [...prev, ...nextItems]);
+      const newScheduleData = [...allItems, ...nextItems];
+      const groupedData = newScheduleData.reduce<{
+        [dayIndex: number]: ScheduleItem[];
+      }>((acc, item) => {
+        const dayIndex = Math.floor((item.id - 1) / 10); // 그룹화 기준
+        acc[dayIndex] = acc[dayIndex] ? [...acc[dayIndex], item] : [item];
+        return acc;
+      }, {});
+
+      setScheduleData(groupedData);
       setPage((prev) => prev + 1);
     }
   }, [page, scheduleData]);
@@ -141,6 +152,25 @@ const Schedule: React.FC<ScheduleProps> = ({
     setDayLabels(labels); // 상태 업데이트
   }, [tripDates]);
 
+  const addNewItem = (dayIndex: number, title: string, location: string) => {
+    const newId =
+      Object.values(scheduleData)
+        .flat()
+        .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+
+    const newItem: ScheduleItem = {
+      id: newId,
+      title,
+      time: "",
+      location,
+    };
+
+    setScheduleData((prev) => ({
+      ...prev,
+      [dayIndex]: [...(prev[dayIndex] || []), newItem], // 해당 날짜 배열에 추가
+    }));
+  };
+
   return (
     <div className="container mx-auto p-4 h-screen overflow-y-auto">
       <div className="bg-white rounded-2xl p-8 relative">
@@ -155,7 +185,6 @@ const Schedule: React.FC<ScheduleProps> = ({
         )}
         {isOwner && isEditMode && (
           <div className="absolute top-4 right-4 flex gap-2">
-            {/* 나중에 수정 */}
             <button
               onClick={() => openEditModal("peoples")}
               className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
@@ -183,8 +212,8 @@ const Schedule: React.FC<ScheduleProps> = ({
         <AlertModal
           isOpen={isEditModalOpen}
           title={`${
-            modalType === "participants"
-              ? "참여자 수정"
+            modalType === "peoples"
+              ? "멤버 수정"
               : modalType === "title"
                 ? "제목 수정"
                 : "날짜 수정"
@@ -208,58 +237,67 @@ const Schedule: React.FC<ScheduleProps> = ({
           <p className="text-gray text-sm mt-2">{tripDates}</p>
         </div>
 
-        <div className="divide-y divide-gray mt-8">
+        <div className="divide-y divide-gray mt-4">
           {dayLabels.map((dayLabel, index) => (
             <div key={index} className="py-8">
-              <h3 className="text-lg font-bold">{index + 1}일차</h3>
-              <p className="text-sm text-gray">{dayLabel}</p>
-              <div className="flex flex-col gap-4 mt-2">
+              <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
+              <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
+                <h3 className="text-[24px] font-semibold ">{index + 1} day</h3>
+              </div>
+              <div className="flex flex-col gap-4">
                 {/* 각 날짜에 해당하는 세부 일정 표시 */}
-                {scheduleData
-                  .filter((item) => item.id === index) // 날짜별 데이터 필터링
-                  .map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 mt-2">
-                      {/* 썸네일 */}
-                      <div className="flex flex-col gap-1 w-full">
-                        {/* 가게 이름, 시간 */}
-                        <div className="flex items-center justify-between">
-                          <p className="text-[18px] font-bold">{item.title}</p>
-                          {isOwner && (
-                            <button
-                              onClick={() => toggleTimePicker(item.id)}
-                              className="text-sm text-gray  hover:text-black"
-                            >
-                              {finalTimeData[item.id]
-                                ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
-                                : "시간 선택"}
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray">{item.location}</p>
-
-                        {/* TimePicker (시간 선택 팝업) */}
-                        {timePickerVisible[item.id] && (
-                          <div className="flex items-center justify-center mt-4">
-                            <div>
-                              <TimePicker
-                                onChange={(startTime, endTime) =>
-                                  handleTimeChange(item.id, startTime, endTime)
-                                }
-                              />
-                            </div>
-                          </div>
+                <div></div>
+                {(scheduleData[index] || []).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 mt-4 border border-blue rounded-2xl p-4"
+                  >
+                    {/* 썸네일 */}
+                    <div className="flex flex-col gap-1 w-full">
+                      {/* 가게 이름, 시간 */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-[20px] font-bold">{item.title}</p>
+                        {isOwner && (
+                          <button
+                            onClick={() => toggleTimePicker(item.id)}
+                            className="text-sm text-gray  hover:text-black"
+                          >
+                            {finalTimeData[item.id]
+                              ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
+                              : "시간 선택"}
+                          </button>
                         )}
                       </div>
+                      <p className="text-sm text-gray">{item.location}</p>
+
+                      {/* TimePicker (시간 선택 팝업) */}
+                      {timePickerVisible[item.id] && (
+                        <div className="flex items-center justify-center mt-4">
+                          <div>
+                            <TimePicker
+                              onChange={(startTime, endTime) =>
+                                handleTimeChange(item.id, startTime, endTime)
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                ))}
                 {isOwner && (
-                  <div className="mt-6 text-center">
+                  <div className="flex mt-6 gap-2 text-center">
                     <button
                       onClick={addLocation}
-                      className="w-full py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
+                      className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
                     >
                       장소 추가
                     </button>
+                    <DirectInputButton
+                      onConfirm={(title, location) =>
+                        addNewItem(index, title, location)
+                      }
+                    />
                   </div>
                 )}
               </div>
