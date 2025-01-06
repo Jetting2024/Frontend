@@ -250,7 +250,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                 {(scheduleData[index] || []).map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 mt-4 border border-blue rounded-2xl p-4"
+                    className="flex items-center gap-4 mt-4 border border-blue rounded-2xl px-6 py-4"
                   >
                     {/* 썸네일 */}
                     <div className="flex flex-col gap-1 w-full">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import NaverMap from "../components/NaverMap";
 import {
   FaChevronRight,
   FaChevronLeft,
@@ -100,13 +101,22 @@ const SchedulePage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex-1 relative">
-          <h2 className="absolute top-4 left-4 text-lg font-bold">지도</h2>
-          <div className="w-full h-full">{/* 지도 API */}</div>
+        <div className="flex-1">
+          <div className="w-full h-full">
+            <NaverMap
+              center={{ lat: 37.5665, lng: 126.978 }}
+              markers={[
+                { lat: 37.5665, lng: 126.978, title: "서울" },
+                { lat: 35.1796, lng: 129.0756, title: "부산" },
+              ]}
+              onMapClick={(lat, lng) => console.log("지도 클릭:", lat, lng)}
+              onClickMarker={(lat, lng) => console.log("마커 클릭:", lat, lng)}
+            />
+          </div>
         </div>
       </div>
       {/* 채팅 세션 */}
-      <div className="flex-1 relative">
+      <div className="flex-1">
         <div className="w-1/3"></div>
         <div
           className={`${
