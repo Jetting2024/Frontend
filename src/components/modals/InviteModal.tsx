@@ -8,7 +8,6 @@ import { authState } from "../../global/recoil/authAtoms";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import {
   generateInvitation,
-  respondToInvite,
 } from "../../invitation/InvitationService";
 
 const InviteModal: React.FC = () => {

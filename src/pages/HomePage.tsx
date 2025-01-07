@@ -5,7 +5,7 @@ import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import { authState } from "../global/recoil/authAtoms";
 import { useRecoilValue } from "recoil";
-import InviteResponseModal from "../components/modals/InviteResponseModal";
+import PendingAccessModal from "../components/modals/PendingAccessModal";
 
 const HomePage: React.FC = () => {
   const auth = useRecoilValue(authState);
