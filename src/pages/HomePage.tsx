@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
-import WebSocketTest from "../components/webSocketTest";
 import { authState } from "../global/recoil/authAtoms";
 import { useRecoilValue } from "recoil";
+import InviteResponseModal from "../components/modals/InviteResponseModal";
 
 const HomePage: React.FC = () => {
   const auth = useRecoilValue(authState);
@@ -47,7 +47,6 @@ const HomePage: React.FC = () => {
   }, []);
 
   return (
-    // <WebSocketTest />
     <div className="w-full h-[calc(100vh-56px)] flex flex-col overflow-hidden">
       <section className="flex flex-col flex-grow justify-center items-center h-1/2 pb-4 bg-gradient-to-b from-[rgba(80,159,232,1)] via-[rgba(80,159,232,0.5)] to-[rgba(80,159,232,0)]">
         <div className="text-white text-[2rem] font-bold tracking-wide mb-4">

@@ -22,7 +22,7 @@ const ChatWindow: React.FC = () => {
   
   const readRoomInfo = useRecoilValue(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
-  const roomId = readRoomInfo.roomId;
+  const roomId = "5";
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -35,13 +35,13 @@ const ChatWindow: React.FC = () => {
   };
 
   const handleSendMessage = (newMessage: string) => {
-    if (!readRoomInfo.roomId) {
+    if (!roomId) {
       console.error("roomId is null. Cannot send a message.");
       return;
     }
 
     const chatMessage: ChatMessage = {
-      roomId: readRoomInfo.roomId,
+      roomId: roomId,
       userId: readAuthInfo.id,
       message: newMessage,
     };
@@ -62,20 +62,17 @@ const ChatWindow: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (!readRoomInfo.roomId) {
+    if (!roomId) {
       return;
     }
 
     const stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws",
-      debug: (str) => console.log(`[STOMP DEBUG]: ${str}`),
       onConnect: () => {
-        console.log(`[STOMP] Connected to room ${readRoomInfo.roomId}.`);
-
-
+        console.log(`[STOMP] Connected to room ${roomId}.`);
         // 메시지 구독
         const subscription = stompClient.subscribe(
-          `/sub/chat/room/${readRoomInfo.roomId}`,
+          `/sub/chat/room/${roomId}`,
           (message) => {
             try {
               // 메시지가 JSON인지 확인하고 파싱
@@ -87,7 +84,7 @@ const ChatWindow: React.FC = () => {
               console.warn("[STOMP] Non-JSON Message received:", message.body);
               setMessages((prev) => [
                 ...prev,
-                { roomId: readRoomInfo.roomId, userId: readAuthInfo.id, message: message.body },
+                { roomId: roomId, userId: readAuthInfo.id, message: message.body },
               ]);
             }
           }
@@ -110,13 +107,13 @@ const ChatWindow: React.FC = () => {
       stompClient.deactivate();
       console.log("[STOMP] Connection closed.");
     };
-  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
+  }, [roomId, readAuthInfo.accessToken]);
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/chat/${readRoomInfo.roomId}/getMessages`,
+          `http://localhost:8080/chat/${roomId}/getMessages`,
           {
             headers: {
               Authorization: `Bearer ${readAuthInfo.accessToken}`,
@@ -138,7 +135,7 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
+  }, [roomId, readAuthInfo.accessToken]);
 
   return (
     <section
@@ -178,8 +175,9 @@ const ChatWindow: React.FC = () => {
             <div className="flex flex-col px-20">
               <TodayDate />
               <div className="flex flex-col overflow-y-auto">
-                {messages.map((message) => (
+                {messages.map((message, index) => (
                   <MessageItem
+                    key={index}
                     message={message.message || ""}
                     isMine={message.userId === readAuthInfo.id}
                   />
