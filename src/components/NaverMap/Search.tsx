@@ -1,64 +1,111 @@
-import React, { useState } from "react";
-import NaverMap from "./NaverMap"; // 경로를 정확히 지정
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const NAVER_MAP_CLIENT_ID = "2kvq7ux5qa";
+interface SearchResult {
+  title: string;
+  address: string;
+  category: string;
+  telephone: string;
+  lat: number;
+  lng: number;
+}
 
 const Search: React.FC = () => {
-  const [center, setCenter] = useState({ lat: 37.5665, lng: 126.978 }); // 초기 지도 중심 (서울)
-  const [markers, setMarkers] = useState<
-    { lat: number; lng: number; title?: string }[]
-  >([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false); // 로딩 상태
+  const [error, setError] = useState<string | null>(null); // 에러 상태
 
-  // 검색 처리 함수
-  const handleSearch = (query: string) => {
-    if (!query) return;
+  const handleSearch = async () => {
+    if (!query.trim) {
+      alert("검색어를 입력하세요.");
+      return;
+    }
 
-    naver.maps.Service.geocode({ query }, (status: string, response: any) => {
-      if (status === naver.maps.Service.Status.OK) {
-        const result = response.v2.addresses[0]; // 첫 번째 검색 결과 사용
-        if (result) {
-          const lat = parseFloat(result.y); // 위도
-          const lng = parseFloat(result.x); // 경도
+    setLoading(true);
+    setError(null);
 
-          console.log(lat, lng); // 확인
+    try {
+      const response = await axios.get(`http://localhost:8080/api/search`, {
+        params: {
+          query,
+          display: 5, // 최대 5개의 결과
+        },
+      });
 
-          // 지도 중심 및 마커 업데이트
-          setCenter({ lat, lng });
-          setMarkers([{ lat, lng, title: query }]);
-        } else {
-          alert("검색 결과가 없습니다.");
-        }
+      if (response.status === 200) {
+        const items = response.data.items.map((item: any) => ({
+          title: item.title.replace(/<\/?b>/g, ""), // HTML 태그 제거
+          address: item.roadAddress,
+          category: item.category,
+          telephone: item.telephone || "없음",
+          lat: parseFloat(item.mapy), // 위도
+          lng: parseFloat(item.mapx), // 경도
+        }));
+
+        setResults(items);
       } else {
-        alert("검색 중 오류가 발생했습니다.");
+        setError("API 요청 실패");
+        console.error("API 요청 실패:", response);
       }
-    });
+    } catch (error) {
+      console.error("API 요청 중 오류 발생:", error);
+      setError("API 요청 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
+    <div className="p-4">
       {/* 검색 바 */}
-      <div className="search-bar">
+      <div className="mb-4">
         <input
           type="text"
-          placeholder="장소를 검색하세요"
-          className="border p-2 rounded w-full"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="검색어를 입력하세요"
+          className="border p-2 rounded w-full mb-2"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              handleSearch((e.target as HTMLInputElement).value); // 검색어로 검색
+              handleSearch();
             }
           }}
         />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          검색
+        </button>
       </div>
 
-      {/* 지도 */}
-      <div style={{ width: "100%", height: "500px" }}>
-        <NaverMap center={center} markers={markers} />
+      {loading && <p>검색 중입니다...</p>}
+
+      {error && <p className="text-red-500">{error}</p>}
+
+      {/* 검색 결과 */}
+      <div>
+        <h2 className="text-lg font-bold mb-2">검색 결과:</h2>
+        <ul className="list-disc pl-4">
+          {results.map((result, index) => (
+            <li key={index} className="mb-4 border p-2 rounded shadow">
+              <h3 className="font-bold">{result.title}</h3>
+              <p>주소: {result.address}</p>
+              <p>카테고리: {result.category}</p>
+              <p>전화번호: {result.telephone}</p>
+              <p>
+                위도: {result.lat}, 경도: {result.lng}
+              </p>
+            </li>
+          ))}
+        </ul>
+        {results.length === 0 && !loading && !error && (
+          <p>검색 결과가 없습니다.</p>
+        )}
       </div>
     </div>
   );
 };
 
 export default Search;
-
-// 빈 export 추가
-export {};

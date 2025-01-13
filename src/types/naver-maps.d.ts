@@ -15,6 +15,12 @@ declare namespace naver.maps {
     center: LatLng;
     zoom: number;
     mapTypeId?: string;
+    zoomControl?: boolean;
+    zoomControlOptions?: {
+      position: keyof typeof Position;
+    };
+    mapDataControl?: boolean;
+    mapTypeControl?: boolean;
   }
 
   class Marker {
@@ -29,23 +35,69 @@ declare namespace naver.maps {
 
   namespace Event {
     function addListener(
-      instance: object,
+      instance: Map | Marker | object,
       eventName: string,
       listener: (event: any) => void
     ): void;
-    function removeListener(instance: object, eventName: string): void;
-    function trigger(instance: object, eventName: string, ...args: any[]): void;
+    function removeListener(
+      instance: Map | Marker | object,
+      eventName: string
+    ): void;
+    function trigger(
+      instance: Map | Marker | object,
+      eventName: string,
+      ...args: any[]
+    ): void;
   }
 
   namespace Service {
     function geocode(
       options: { query: string },
-      callback: (status: string, response: any) => void
+      callback: (status: keyof typeof Status, response: GeocodeResponse) => void
     ): void;
 
+    function search(
+      options: { query: string },
+      callback: (status: keyof typeof Status, response: SearchResponse) => void
+    ): void;
+
+    interface GeocodeResponse {
+      v2: {
+        status: string;
+        meta: {
+          totalCount: number;
+          count: number;
+        };
+        addresses: Array<{
+          roadAddress: string;
+          jibunAddress: string;
+          x: string;
+          y: string;
+        }>;
+      };
+    }
+
+    interface SearchResponse {
+      items: Array<{
+        title: string;
+        address: string;
+        mapx: string;
+        mapy: string;
+        category: string;
+        link: string;
+      }>;
+    }
+
     const Status: {
-      OK: string;
-      ERROR: string;
+      OK: "OK";
+      ERROR: "ERROR";
     };
   }
+
+  const Position: {
+    TOP_LEFT: "top_left";
+    TOP_RIGHT: "top_right";
+    BOTTOM_LEFT: "bottom_left";
+    BOTTOM_RIGHT: "bottom_right";
+  };
 }
