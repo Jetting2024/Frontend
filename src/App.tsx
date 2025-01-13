@@ -16,6 +16,8 @@ import SelectRegionPage from "./pages/SelectRegionPage";
 import OAuth2RedirectHandler from "./auth/OAuth2RedirectHandler";
 import MakeChatPage from "./pages/MakeChatPage";
 import LoadingPage from "./pages/LoadingPage";
+import InviteLinkPage from "./pages/InviteLinkPage";
+import PendingAccessModal from "./components/modals/PendingAccessModal";
 
 const App: React.FC = () => {
   return (
@@ -37,6 +39,7 @@ const App: React.FC = () => {
           <Route path="/make-room" element={<MakeChatPage />} />
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/member/kakao/callback" element={<OAuth2RedirectHandler />} />
+          <Route path="/invite/:travelId/:invitationId" element={<PendingAccessModal />} />
         </Routes>
       </Router>
     </RecoilRoot>
