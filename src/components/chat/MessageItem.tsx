@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-interface MyMessageItemProps {
+interface MessageItemProps {
   message: string;
+  isMine: boolean; // 내가 보낸 메시지 여부
 }
 
-const MyMessageItem: React.FC<MyMessageItemProps> = ({ message }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
   const [currentTime, setCurrentTime] = useState("");
   const [truncatedMessage, setTruncatedMessage] = useState(""); // 축약된 메시지
   const [isTruncated, setIsTruncated] = useState(false); // 메시지가 축약되었는지 여부
@@ -51,11 +52,19 @@ const MyMessageItem: React.FC<MyMessageItemProps> = ({ message }) => {
   };
 
   return (
-    <div className="flex flex-row">
-      <div className="flex items-end mb-2 text-[10px] text-[#3d3d3d] text-opacity-80 min-w-16">
+    <div
+      className={`flex flex-col mb-2 ${
+        isMine ? "items-end" : "items-start"
+      }`} // 메시지 방향 조정
+    >
+      <div className="text-[10px] text-[#3d3d3d] text-opacity-80 min-w-16 mb-1">
         {currentTime}
       </div>
-      <div className="px-4 py-2 m-2 border-[1px] border-[#3d3d3d] border-opacity-30 shadow-sm rounded-3xl max-w-xs relative">
+      <div
+        className={`px-4 py-2 m-2 border-[1px] border-[#3d3d3d] border-opacity-10 shadow-sm rounded-3xl max-w-xs relative ${
+          isMine ? "bg-white" : "bg-[#C2DDF7]"
+        }`}
+      >
         <div className="whitespace-pre-wrap break-all">
           {isTruncated ? truncatedMessage : message}
         </div>
@@ -72,4 +81,4 @@ const MyMessageItem: React.FC<MyMessageItemProps> = ({ message }) => {
   );
 };
 
-export default MyMessageItem;
+export default MessageItem;

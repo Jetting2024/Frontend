@@ -5,15 +5,7 @@ import "./custom.css"; // 커스텀 CSS 파일
 import { ko } from "date-fns/locale"; // 한국어 설정
 import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
-import { Link } from "react-router-dom";
-
-interface DayPickerProps {
-  startDate: Date | undefined;
-  setStartDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
-  endDate: Date | undefined;
-  setEndDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
-  onConfirm: () => void; // "선택" 버튼 클릭 시 실행될 함수
-}
+import { Link, useNavigate } from "react-router-dom";
 
 const MONTHS = [
   "1월",
@@ -30,14 +22,11 @@ const MONTHS = [
   "12월",
 ];
 
-const DayPicker: React.FC<DayPickerProps> = ({
-  startDate,
-  setStartDate,
-  endDate,
-  setEndDate,
-  onConfirm,
-}) => {
+const DayPicker: React.FC = () => {
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined); // 시작 날짜
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined); // 끝 날짜
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // 현재 연도
+  const navigator = useNavigate();
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates) {
@@ -64,6 +53,33 @@ const DayPicker: React.FC<DayPickerProps> = ({
     setSelectedYear(Number(event.target.value));
   };
 
+  const selectDate = () => {
+    if (!startDate || !endDate) {
+      alert("날짜를 선택해주세요.");
+      return;
+    }
+
+    // 년도와 날짜 포맷
+    const year = selectedYear ? `${selectedYear}년` : "";
+    const start = startDate
+      ? `${startDate.getMonth() + 1}월 ${startDate.getDate()}일`
+      : "";
+    const end = endDate
+      ? `${endDate.getMonth() + 1}월 ${endDate.getDate()}일`
+      : "";
+
+    // 숙박 일수 계산
+    const nights =
+      endDate && startDate
+        ? Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+        : 0;
+
+    const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
+    navigator("/make-room", { state: { fullDate } });
+  };
+
   return (
     <div className="datepicker-frame w-[517px] h-[620px]">
       <div className="font-bold text-[1.2rem] mb-2">언제 가시나요?</div>
@@ -71,7 +87,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
       <div>
         <DatePicker
           withPortal
-          dateFormat="yyyy.MM.dd(eee)"
+          dateFormat="MM.dd"
           inline
           selectsRange // 범위 선택 활성화
           startDate={startDate} // 시작 날짜
@@ -126,7 +142,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
         />
 
         <div className="button-container">
-          <button className="button1" onClick={onConfirm}>
+          <button className="button1" onClick={selectDate}>
             선택
           </button>
           <Link className="button2" to="/">

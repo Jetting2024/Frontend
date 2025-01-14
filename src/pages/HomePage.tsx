@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar"; // 검색창 컴포넌트 불러오기
 import TravelList from "../components/travellist/TravelList";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { authState } from "../global/recoil/authAtoms";
+import { useRecoilValue } from "recoil";
+import PendingAccessModal from "../components/modals/PendingAccessModal";
 
 const HomePage: React.FC = () => {
+  const auth = useRecoilValue(authState);
   const navigate = useNavigate();
   const handleSearch = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation(); // 이벤트 버블링 방지
@@ -38,12 +42,12 @@ const HomePage: React.FC = () => {
     if (scrollElement) {
       scrollElement.addEventListener("scroll", handleScroll);
     }
-
     return () => scrollElement?.removeEventListener("scroll", handleScroll);
+
   }, []);
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-[calc(100vh-56px)] flex flex-col overflow-hidden">
       <section className="flex flex-col flex-grow justify-center items-center h-1/2 pb-4 bg-gradient-to-b from-[rgba(80,159,232,1)] via-[rgba(80,159,232,0.5)] to-[rgba(80,159,232,0)]">
         <div className="text-white text-[2rem] font-bold tracking-wide mb-4">
           친구들과 여행 일정을 한 번에!

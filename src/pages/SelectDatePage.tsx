@@ -1,14 +1,14 @@
 import React from "react";
-import InviteModal from "../components/modals/InviteModal";
+import DayPicker from "../components/daypicker/DayPicker";
 
-const InviteFriendsPage: React.FC = () => {
+const SelectDatePage: React.FC = () => {
   return (
     <div className="w-full h-screen relative bg-gray bg-opacity-30">
       <div className=" absolute inset-0 flex justify-center items-center">
-        <InviteModal />
+        <DayPicker />
       </div>
     </div>
   );
 };
 
-export default InviteFriendsPage;
+export default SelectDatePage;

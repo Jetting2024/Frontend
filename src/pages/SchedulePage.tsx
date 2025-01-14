@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import Schedule from "../components/Schedule";
 import Search from "../components/NaverMap/Search";
+import ChatWindow from "../components/chat/ChatWindow";
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -96,29 +97,29 @@ const SchedulePage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* 채팅 세션 */}
-        <div className="flex-1">
-          <div className="w-1/3"></div>
-          <div
-            className={`${
-              isChatOpen ? "h-[calc(100vh*4/5)]" : "h-12"
-            } w-2/3 absolute bottom-0 right-0 bg-lightgray border-t border-lightgray rounded-t-2xl transition-all duration-300 ease-in-out`}
-          >
-            <button
-              onClick={toggleChat}
-              className="w-full text-black py-2 flex justify-center"
-            >
-              {isChatOpen ? <FaChevronDown /> : <FaChevronUp />}
-            </button>
-            {isChatOpen && (
-              <div>
-                <p>채팅</p>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
+      {/* 채팅 세션 */}
+      <ChatWindow />
+      {/* <div className="flex-1 relative">
+        <div className="w-1/3"></div>
+        <div
+          className={`${
+            isChatOpen ? "h-[calc(100vh*4/5)]" : "h-12"
+          } w-2/3 absolute bottom-0 right-0 bg-lightgray border-t border-lightgray rounded-t-2xl transition-all duration-300 ease-in-out`}
+        >
+          <button
+            onClick={toggleChat}
+            className="w-full text-black py-2 flex justify-center"
+          >
+            {isChatOpen ? <FaChevronDown /> : <FaChevronUp />}
+          </button>
+          {isChatOpen && (
+            <div>
+              <p>채팅</p>
+            </div>
+          )}
+        </div>
+      </div> */}
     </RecoilRoot>
   );
 };

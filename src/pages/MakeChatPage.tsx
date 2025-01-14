@@ -1,14 +1,14 @@
 import React from "react";
-import InviteModal from "../components/modals/InviteModal";
+import MakeRoomModal from "../components/modals/MakeRoomModal";
 
-const InviteFriendsPage: React.FC = () => {
+const MakeChatPage: React.FC = () => {
   return (
     <div className="w-full h-screen relative bg-gray bg-opacity-30">
       <div className=" absolute inset-0 flex justify-center items-center">
-        <InviteModal />
+        <MakeRoomModal />
       </div>
     </div>
   );
 };
 
-export default InviteFriendsPage;
+export default MakeChatPage;

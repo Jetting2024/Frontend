@@ -3,12 +3,18 @@ import { Link } from "react-router-dom";
 import { FiMenu } from "react-icons/fi";
 import Inbox from "./Inbox";
 import FriendList from "./FriendsList";
+import { useRecoilState } from "recoil";
+import { authState } from "../global/recoil/authAtoms";
 
 const Navbar: React.FC = () => {
+  const [ auth, setAuth ] = useRecoilState(authState);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInboxOpen, setIsInboxOpen] = useState(false);
   const [isFriendsListOpen, setIsFriendsListOpen] = useState(false);
+
+  const userName = sessionStorage.getItem("name");
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -42,6 +48,11 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const logout = () => {
+    sessionStorage.clear(); // sessionStorage만 초기화
+    setAuth({ isAuthenticated: false, id: null, accessToken: null, refreshToken: null, image: null });
+  };
+
   return (
     <div className="w-full h-14 flex justify-between items-center sticky top-0 border-b border-lightgray bg-white px-8 z-50">
       <div>
@@ -55,14 +66,24 @@ const Navbar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-8 ml-auto">
-        <div className="flex">
-          <Link
-            to="/signin"
-            className="py-1 px-3 text-gray font-sans font-light text-sm hover:text-black"
-          >
-            로그인/회원가입
-          </Link>
-        </div>
+        {auth.isAuthenticated ? <div className="flex">
+            <Link
+              to="/"
+              className="py-1 px-3 text-gray font-sans font-light text-sm hover:text-black"
+              onClick={logout}
+            >
+              로그아웃
+            </Link>
+          </div> : (
+          <div className="flex">
+            <Link
+              to="/signin"
+              className="py-1 px-3 text-gray font-sans font-light text-sm hover:text-black"
+            >
+              로그인/회원가입
+            </Link>
+          </div>
+        )}
 
         <div className="mr-auto">
           <button onClick={toggleSidebar}>
@@ -90,15 +111,23 @@ const Navbar: React.FC = () => {
         <nav className="h-full border border-lightgray">
           {/* 로그인 기능 구현 후 지울 코드 */}
           <div className="flex flex-col items-center justify-center h-64 bg-lightgray border-b border-lightgray">
-            <Link to="/my-profile" className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600">
+            <Link
+              to="/my-profile"
+              className="font-sans font-light absolute top-2 right-2 text-xs bg-blue-500 text-gray px-2 py-1 rounded hover:bg-blue-600"
+            >
               프로필 편집
             </Link>
             <img
-              src="https://via.placeholder.com/100"
+              src={auth.image ? auth.image : "https://via.placeholder.com/100"}
               alt="Profile"
               className="w-20 h-20 rounded-full mb-2"
             />
-            <h2 className="text-lg">사용자</h2>
+            {auth.isAuthenticated ? (
+              <h2 className="text-lg">{userName}</h2>
+            ) : (
+              <h2 className="text-lg">사용자</h2>
+            )}
+
             <p className=" text-xs text-gray mt-2">여행을 좋아하는 모험가</p>
           </div>
           {/* 여기까지 */}
