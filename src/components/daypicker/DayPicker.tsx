@@ -75,9 +75,9 @@ const DayPicker: React.FC = () => {
             (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
           )
         : 0;
-    
+
     const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
-    navigator('/make-room', { state: { fullDate } })
+    navigator("/make-room", { state: { fullDate } });
   };
 
   return (

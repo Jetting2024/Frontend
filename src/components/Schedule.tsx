@@ -1,5 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { format, differenceInDays, addDays } from "date-fns"; // date-fns 사용
 import AlertModal from "../components/AlertModal";
+import TimePicker from "../components/timeSetModal/TimePicker";
+import DirectInputButton from "../components/DirectInputButton";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -9,7 +12,6 @@ interface ScheduleProps {
 
 interface ScheduleItem {
   id: number;
-  photo: string;
   title: string;
   time: string;
   location: string;
@@ -17,29 +19,79 @@ interface ScheduleItem {
 
 const Schedule: React.FC<ScheduleProps> = ({
   isOwner,
-  scheduleData,
+  //scheduleData,
   addLocation,
 }) => {
   const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
   const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
   const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
+  const [dayLabels, setDayLabels] = useState<string[]>([]); // "n일차" 텍스트 배열
 
   const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 열림 상태
   const [modalType, setModalType] = useState(""); // 수정할 항목을 저장 (참여자, 제목, 날짜)
   const [editValue, setEditValue] = useState(""); // 수정할 값
 
-  const [displayedData, setDisplayedData] = useState<ScheduleItem[]>(
-    scheduleData.slice(0, 10)
-  );
+  const [scheduleData, setScheduleData] = useState<{
+    [dayIndex: number]: ScheduleItem[];
+  }>({});
+
   const [page, setPage] = useState(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  //무한 스크롤 함수
+  const [timePickerVisible, setTimePickerVisible] = useState<{
+    [id: number]: boolean;
+  }>({});
+  const [tempTimeData, setTempTimeData] = useState<{
+    [id: number]: { startTime: string; endTime: string };
+  }>({});
+  const [finalTimeData, setFinalTimeData] = useState<{
+    [id: number]: { startTime: string; endTime: string };
+  }>({});
+
+  const toggleTimePicker = (id: number) => {
+    if (timePickerVisible[id]) {
+      const savedTime = tempTimeData[id] || {
+        startTime: "설정되지 않음",
+        endTime: "설정되지 않음",
+      };
+      setFinalTimeData((prev) => ({
+        ...prev,
+        [id]: savedTime,
+      }));
+
+      const time = `${savedTime.startTime} ~ ${savedTime.endTime}`;
+      console.log(`ID ${id} 저장된 시간: ${time}`); // 콘솔
+    }
+
+    setTimePickerVisible((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleTimeChange = (id: number, startTime: string, endTime: string) => {
+    setTempTimeData((prev) => ({
+      ...prev,
+      [id]: { startTime, endTime },
+    }));
+  };
+
   const loadMoreItems = useCallback(() => {
-    const nextItems = scheduleData.slice(page * 10, (page + 1) * 10);
+    const allItems = Object.values(scheduleData).flat(); // 객체의 값을 배열로 변환 후 평탄화
+    const nextItems = allItems.slice(page * 10, (page + 1) * 10);
+
     if (nextItems.length > 0) {
-      setDisplayedData((prev) => [...prev, ...nextItems]);
+      const newScheduleData = [...allItems, ...nextItems];
+      const groupedData = newScheduleData.reduce<{
+        [dayIndex: number]: ScheduleItem[];
+      }>((acc, item) => {
+        const dayIndex = Math.floor((item.id - 1) / 10); // 그룹화 기준
+        acc[dayIndex] = acc[dayIndex] ? [...acc[dayIndex], item] : [item];
+        return acc;
+      }, {});
+
+      setScheduleData(groupedData);
       setPage((prev) => prev + 1);
     }
   }, [page, scheduleData]);
@@ -88,6 +140,37 @@ const Schedule: React.FC<ScheduleProps> = ({
     setIsEditModalOpen(false);
   };
 
+  // 날짜별 "n일차" 생성 로직
+  useEffect(() => {
+    const [start, end] = tripDates.split(" ~ ").map((date) => new Date(date));
+    const numDays = differenceInDays(end, start) + 1;
+
+    const labels = Array.from({ length: numDays }, (_, i) =>
+      format(addDays(start, i), "yyyy-MM-dd")
+    );
+
+    setDayLabels(labels); // 상태 업데이트
+  }, [tripDates]);
+
+  const addNewItem = (dayIndex: number, title: string, location: string) => {
+    const newId =
+      Object.values(scheduleData)
+        .flat()
+        .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+
+    const newItem: ScheduleItem = {
+      id: newId,
+      title,
+      time: "",
+      location,
+    };
+
+    setScheduleData((prev) => ({
+      ...prev,
+      [dayIndex]: [...(prev[dayIndex] || []), newItem], // 해당 날짜 배열에 추가
+    }));
+  };
+
   return (
     <div className="container mx-auto p-4 h-screen overflow-y-auto">
       <div className="bg-white rounded-2xl p-8 relative">
@@ -102,7 +185,6 @@ const Schedule: React.FC<ScheduleProps> = ({
         )}
         {isOwner && isEditMode && (
           <div className="absolute top-4 right-4 flex gap-2">
-            {/* 나중에 수정 */}
             <button
               onClick={() => openEditModal("peoples")}
               className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
@@ -130,8 +212,8 @@ const Schedule: React.FC<ScheduleProps> = ({
         <AlertModal
           isOpen={isEditModalOpen}
           title={`${
-            modalType === "participants"
-              ? "참여자 수정"
+            modalType === "peoples"
+              ? "멤버 수정"
               : modalType === "title"
                 ? "제목 수정"
                 : "날짜 수정"
@@ -155,38 +237,70 @@ const Schedule: React.FC<ScheduleProps> = ({
           <p className="text-gray text-sm mt-2">{tripDates}</p>
         </div>
 
-        {/* 일정 목록 표시 */}
-        <div className="divide-y divide-gray mt-8">
-          {scheduleData.map((item, index) => (
-            <div key={item.id} className="py-8">
-              <h3 className="text-lg font-bold">{index + 1}일차</h3>
-              <div className="flex items-center gap-4 mt-2">
-                {/* 썸네일 */}
-                <div className="w-16 h-16 bg-gray rounded-lg"></div>
-                <div className="flex flex-col gap-1 w-full">
-                  {/* 가게 이름, 시간 */}
-                  <div className="flex">
-                    <p className="text-[18px] font-bold">{item.title}</p>
-                    <p className="text-[12px] text-gray ml-2 mt-2">
-                      {item.time}
-                    </p>
-                  </div>
-                  <p className="text-sm text-gray">{item.location}</p>
-                </div>
+        <div className="divide-y divide-gray mt-4">
+          {dayLabels.map((dayLabel, index) => (
+            <div key={index} className="py-8">
+              <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
+              <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
+                <h3 className="text-[24px] font-semibold ">{index + 1} day</h3>
               </div>
-              {isOwner && (
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={addLocation}
-                    className="w-full py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white"
+              <div className="flex flex-col gap-4">
+                {/* 각 날짜에 해당하는 세부 일정 표시 */}
+                <div></div>
+                {(scheduleData[index] || []).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 mt-4 border border-blue rounded-2xl px-6 py-4"
                   >
-                    장소 추가
-                  </button>
-                  {/* <button className="ml-4 px-12 py-1 rounded-lg  text-sm border border-gray hover:bg-black hover:text-white">
-                    일정 추가
-                  </button> */}
-                </div>
-              )}
+                    {/* 썸네일 */}
+                    <div className="flex flex-col gap-1 w-full">
+                      {/* 가게 이름, 시간 */}
+                      <div className="flex items-center justify-between">
+                        <p className="text-[20px] font-bold">{item.title}</p>
+                        {isOwner && (
+                          <button
+                            onClick={() => toggleTimePicker(item.id)}
+                            className="text-sm text-gray  hover:text-black"
+                          >
+                            {finalTimeData[item.id]
+                              ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
+                              : "시간 선택"}
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray">{item.location}</p>
+
+                      {/* TimePicker (시간 선택 팝업) */}
+                      {timePickerVisible[item.id] && (
+                        <div className="flex items-center justify-center mt-4">
+                          <div>
+                            <TimePicker
+                              onChange={(startTime, endTime) =>
+                                handleTimeChange(item.id, startTime, endTime)
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isOwner && (
+                  <div className="flex mt-6 gap-2 text-center">
+                    <button
+                      onClick={addLocation}
+                      className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
+                    >
+                      장소 추가
+                    </button>
+                    <DirectInputButton
+                      onConfirm={(title, location) =>
+                        addNewItem(index, title, location)
+                      }
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           ))}
           <div ref={lastItemRef} className="h-1" />
@@ -195,21 +309,5 @@ const Schedule: React.FC<ScheduleProps> = ({
     </div>
   );
 };
-
-// MainPage에서 일정 컴포넌트를 사용하려면 scheduleData를 전달
-// const MainPage: React.FC = () => {
-//   const scheduleData = [
-//     { id: 1, title: "제주도 도착", time: "10:00 AM", location: "제주공항" },
-//     { id: 2, title: "점심식사", time: "12:00 PM", location: "현지식당" },
-//     { id: 3, title: "한라산 등반", time: "3:00 PM", location: "한라산" },
-//   ];
-
-//   return (
-//     <div>
-//       <Schedule isOwner={true} scheduleData={scheduleData} />
-//     </div>
-//   );
-
-// };
 
 export default Schedule;

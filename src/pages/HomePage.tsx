@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const handleSearch = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation(); // 이벤트 버블링 방지
-    navigate("/select-region");
+    // navigate("/select-region");
   };
 
   const scrollRef = useRef<HTMLDivElement>(null);
