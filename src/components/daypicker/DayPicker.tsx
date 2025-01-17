@@ -5,7 +5,7 @@ import "./custom.css"; // 커스텀 CSS 파일
 import { ko } from "date-fns/locale"; // 한국어 설정
 import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const MONTHS = [
   "1월",
@@ -27,6 +27,8 @@ const DayPicker: React.FC = () => {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined); // 끝 날짜
   const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // 현재 연도
   const navigator = useNavigate();
+  const location = useLocation();
+  const { travelName } = location.state || { travelName: "" }; // 이전 페이지에서 전달받은 travelName
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates) {
@@ -53,7 +55,7 @@ const DayPicker: React.FC = () => {
     setSelectedYear(Number(event.target.value));
   };
 
-  const selectDate = () => {
+  const selectDate = async () => {
     if (!startDate || !endDate) {
       alert("날짜를 선택해주세요.");
       return;
@@ -78,6 +80,31 @@ const DayPicker: React.FC = () => {
 
     const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
     navigator("/make-room", { state: { fullDate } });
+
+    try {
+      const response = await fetch("http://localhost:8080/travel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          travelName,
+          startDate: startDate,
+          endDate: endDate,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("result:", data.result);
+      } else {
+        console.error("여행 생성 실패:", response.statusText);
+        alert("여행 생성에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("API 요청 중 오류:", error);
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (

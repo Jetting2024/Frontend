@@ -38,6 +38,7 @@ const App: React.FC = () => {
           <Route path="/select-region" element={<SelectRegionPage />} />
           <Route path="/make-room" element={<MakeChatPage />} />
           <Route path="/loading" element={<LoadingPage />} />
+          <Route path="/day-picker" element={<DayPickerPage />} />
           <Route
             path="/member/kakao/callback"
             element={<OAuth2RedirectHandler />}
