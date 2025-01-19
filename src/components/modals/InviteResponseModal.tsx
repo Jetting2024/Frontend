@@ -4,11 +4,20 @@ import { useRecoilValue } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
 import { respondToInvite } from "../../invitation/InvitationService";
 
-const InviteResponseModal: React.FC = () => {
-  const invitedPerson = "유지원";
+interface InviteResponseModalProps {
+  travelId: number | undefined; // 초대받은 여행 ID
+  invitationLink: string | undefined; // 초대 링크
+  invitedPerson: string | undefined; // 초대받은 사람 이름
+  onClose: () => void; // 모달 닫기 핸들러
+}
+
+const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
+  travelId,
+  invitationLink,
+  invitedPerson,
+  onClose,
+}) => {
   const [isVisible, setIsVisible] = useState(true);
-  const [travelId, setTravelId] = useState<number>(5);
-  const [invitationLink, setInvitationLink] = useState<string>("");
   const [responseMessage, setResponseMessage] = useState<string>("");
 
   const readAuthState = useRecoilValue(authState);
@@ -26,13 +35,10 @@ const InviteResponseModal: React.FC = () => {
       );
       setResponseMessage(message);
       console.log("message: ", message);
+      onClose(); // 응답 후 모달 닫기
     } catch (error) {
-      console.log("failed to generate invitation: ", error);
+      console.log("failed to respond to invitation: ", error);
     }
-  };
-
-  const closeModal = () => {
-    setIsVisible(false);
   };
 
   if (!isVisible) {
@@ -45,7 +51,7 @@ const InviteResponseModal: React.FC = () => {
       <IoPersonCircleOutline size={28} fill="#fff" />
 
       {/* 텍스트 영역 */}
-      <div className=" w-auto flex flex-col flex-1 max-w-[12rem]">
+      <div className="w-auto flex flex-col flex-1 max-w-[12rem]">
         <span className="text-white text-[0.8rem] whitespace-nowrap overflow-hidden text-ellipsis block">
           "{invitedPerson}"
         </span>
@@ -69,8 +75,8 @@ const InviteResponseModal: React.FC = () => {
         <IoCloseOutline
           size={24}
           stroke="#fff"
-          className=" cursor-pointer"
-          onClick={closeModal}
+          className="cursor-pointer"
+          onClick={onClose}
         />
       </div>
     </div>

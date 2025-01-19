@@ -10,11 +10,22 @@ import {
 import Schedule from "../components/Schedule";
 import Search from "../components/NaverMap/Search";
 import ChatWindow from "../components/chat/ChatWindow";
+import InviteResponseModal from "../components/modals/InviteResponseModal";
+import { useLocation } from "react-router-dom";
+
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearchInput, setIsSearchInput] = useState(false);
+  const [isInviteModalVisible, setIsInviteModalVisible] = useState(true); // 모달 표시 상태
+  const [inviteData, setInviteData] = useState<{
+    travelId: number | undefined;
+    invitationLink: string | undefined;
+    invitedPerson: string | undefined;
+  } | null>(null);
+
+  const location = useLocation();
 
   const toggleChat = () => {
     if (isSearchOpen) {
@@ -30,6 +41,10 @@ const SchedulePage: React.FC = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
+  const closeInviteModal = () => {
+    setIsInviteModalVisible(false); // 모달 닫기
+  };
+
   const handleSearchInputClose = () => {
     setIsSearchInput(false); // 기존으로 복귀
   };
@@ -43,6 +58,14 @@ const SchedulePage: React.FC = () => {
       photo: "",
     },
   ];
+
+  useState(() => {
+    setInviteData({
+      travelId: location.state?.travelId,
+      invitationLink: location.state?.invitationLink,
+      invitedPerson: "유지원, 조윤주",
+    });
+  });
 
   return (
     <RecoilRoot>
@@ -98,29 +121,22 @@ const SchedulePage: React.FC = () => {
           </div>
         </div>
       </div>
+
       {/* 채팅 세션 */}
       <ChatWindow />
-      {/* <div className="flex-1 relative">
-        <div className="w-1/3"></div>
-        <div
-          className={`${
-            isChatOpen ? "h-[calc(100vh*4/5)]" : "h-12"
-          } w-2/3 absolute bottom-0 right-0 bg-lightgray border-t border-lightgray rounded-t-2xl transition-all duration-300 ease-in-out`}
-        >
-          <button
-            onClick={toggleChat}
-            className="w-full text-black py-2 flex justify-center"
-          >
-            {isChatOpen ? <FaChevronDown /> : <FaChevronUp />}
-          </button>
-          {isChatOpen && (
-            <div>
-              <p>채팅</p>
-            </div>
-          )}
+
+      {/* 초대 응답 모달 */}
+      {isInviteModalVisible && (
+        <div className="absolute top-4 right-4 z-50">
+          <InviteResponseModal
+            travelId={inviteData?.travelId}
+            invitationLink={inviteData?.invitationLink}
+            invitedPerson={inviteData?.invitedPerson}
+            onClose={closeInviteModal}
+          />
         </div>
-      </div> */}
-    </RecoilRoot>
+      )}
+    </div>
   );
 };
 

@@ -41,7 +41,7 @@ const SelectRegionPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-[calc(100vh-56px)] flex flex-col">
       <section className="flex flex-col flex-grow justify-center items-center h-1/2">
         <div className="text-2xl font-extrabold tracking-wide mb-8">
           어디로 가시나요?
