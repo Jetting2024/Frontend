@@ -19,6 +19,7 @@ import MakeChatPage from "./pages/MakeChatPage";
 import LoadingPage from "./pages/LoadingPage";
 import InviteLinkPage from "./pages/InviteLinkPage";
 import PendingAccessModal from "./components/modals/PendingAccessModal";
+import SelectDatePage from "./pages/SelectDatePage";
 
 const App: React.FC = () => {
   return (
@@ -33,7 +34,7 @@ const App: React.FC = () => {
           <Route path="/recover" element={<RecoverPwdPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/invite" element={<InviteFriendsPage />} />
-          {/* <Route path="/select-date" element={<SelectDatePage />} /> */}
+          <Route path="/select-date" element={<SelectDatePage />} />
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
           <Route path="/select-region" element={<SelectRegionPage />} />

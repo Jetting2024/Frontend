@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./custom.css"; // 커스텀 CSS 파일
-import { ko } from "date-fns/locale"; // 한국어 설정
+import "./custom.css";
+import { ko } from "date-fns/locale";
 import { getMonth, getYear } from "date-fns";
-import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
-import { Link, useNavigate } from "react-router-dom";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 
 const MONTHS = [
   "1월",
@@ -22,11 +21,23 @@ const MONTHS = [
   "12월",
 ];
 
-const DayPicker: React.FC = () => {
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined); // 시작 날짜
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined); // 끝 날짜
-  const [selectedYear, setSelectedYear] = useState<number>(getYear(new Date())); // 현재 연도
-  const navigator = useNavigate();
+// ** DayPicker Props 타입 정의
+interface DayPickerProps {
+  startDate: Date | undefined;
+  setStartDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  endDate: Date | undefined;
+  setEndDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
+  onConfirm: () => void; // 날짜 선택 완료 시 호출할 함수
+}
+
+const DayPicker: React.FC<DayPickerProps> = ({
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  onConfirm,
+}) => {
+  const [selectedYear, setSelectedYear] = React.useState<number>(getYear(new Date()));
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates) {
@@ -39,7 +50,6 @@ const DayPicker: React.FC = () => {
     }
   };
 
-  // 커스텀 입력 컴포넌트
   const CustomInput = React.forwardRef<HTMLButtonElement, any>(
     ({ value, onClick }, ref) => (
       <button className="input-box" onClick={onClick} ref={ref}>
@@ -48,36 +58,8 @@ const DayPicker: React.FC = () => {
     )
   );
 
-  // 연도 변경 핸들러
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(Number(event.target.value));
-  };
-
-  const selectDate = () => {
-    if (!startDate || !endDate) {
-      alert("날짜를 선택해주세요.");
-      return;
-    }
-
-    // 년도와 날짜 포맷
-    const year = selectedYear ? `${selectedYear}년` : "";
-    const start = startDate
-      ? `${startDate.getMonth() + 1}월 ${startDate.getDate()}일`
-      : "";
-    const end = endDate
-      ? `${endDate.getMonth() + 1}월 ${endDate.getDate()}일`
-      : "";
-
-    // 숙박 일수 계산
-    const nights =
-      endDate && startDate
-        ? Math.ceil(
-            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-          )
-        : 0;
-
-    const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
-    navigator("/make-room", { state: { fullDate } });
   };
 
   return (
@@ -89,31 +71,30 @@ const DayPicker: React.FC = () => {
           withPortal
           dateFormat="MM.dd"
           inline
-          selectsRange // 범위 선택 활성화
-          startDate={startDate} // 시작 날짜
-          endDate={endDate} // 끝 날짜
-          onChange={handleDateChange} // 날짜 변경 핸들러
+          selectsRange
+          startDate={startDate}
+          endDate={endDate}
+          onChange={handleDateChange}
           wrapperClassName="input-attribute"
-          customInput={<CustomInput />} // 커스텀 입력 사용
+          customInput={<CustomInput />}
           excludeDateIntervals={[
             {
               start: new Date(),
               end: new Date(new Date().setDate(new Date().getDate() + 2)),
             },
-          ]} // 특정 날짜 범위 제외
-          locale={ko} // 한국어 로케일
+          ]}
+          locale={ko}
           renderCustomHeader={({ monthDate, decreaseMonth, increaseMonth }) => {
-            const currentMonth = getMonth(monthDate); // 현재 월 (0부터 시작, 0은 1월)
+            const currentMonth = getMonth(monthDate);
             return (
               <div className="custom-header">
-                {/* 연도 선택 드롭다운 추가 */}
                 <select
                   value={selectedYear}
                   onChange={handleYearChange}
                   className="year-select"
                 >
                   {[...Array(10)].map((_, index) => {
-                    const year = getYear(new Date()) + index; // 현재 연도 기준으로 10년까지 선택 가능
+                    const year = getYear(new Date()) + index;
                     return (
                       <option key={year} value={year}>
                         {year}년
@@ -121,33 +102,21 @@ const DayPicker: React.FC = () => {
                     );
                   })}
                 </select>
-                <button
-                  type="button"
-                  onClick={decreaseMonth}
-                  className="month-button"
-                >
+                <button type="button" onClick={decreaseMonth} className="month-button">
                   <FaChevronLeft />
                 </button>
                 <span className="month">{MONTHS[currentMonth]}</span>
-                <button
-                  type="button"
-                  onClick={increaseMonth}
-                  className="month-button"
-                >
+                <button type="button" onClick={increaseMonth} className="month-button">
                   <FaChevronRight />
                 </button>
               </div>
             );
           }}
         />
-
         <div className="button-container">
-          <button className="button1" onClick={selectDate}>
+          <button className="button1" onClick={onConfirm}>
             선택
           </button>
-          <Link className="button2" to="/">
-            지역 다시 선택하기
-          </Link>
         </div>
       </div>
     </div>

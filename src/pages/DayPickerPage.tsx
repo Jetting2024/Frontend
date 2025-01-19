@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DayPicker from "../components/daypicker/DayPicker";
 
-const DayPickerPage = () => {
+const DayPickerPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { travelName } = location.state as { travelName: string };
@@ -15,11 +15,8 @@ const DayPickerPage = () => {
       return;
     }
 
-    const formattedStartDate = startDate.toLocaleDateString("en-CA"); // "yyyy-mm-dd"
-    const formattedEndDate = endDate.toLocaleDateString("en-CA"); // "yyyy-mm-dd"
-
-    console.log("Formatted Start Date:", formattedStartDate);
-    console.log("Formatted End Date:", formattedEndDate);
+    const formattedStartDate = startDate.toLocaleDateString("en-CA");
+    const formattedEndDate = endDate.toLocaleDateString("en-CA");
 
     try {
       const response = await fetch("/api/travel", {
@@ -31,16 +28,12 @@ const DayPickerPage = () => {
           endDate: formattedEndDate,
         }),
       });
+
       if (response.ok) {
         const data = await response.json();
-        console.log("여행 생성 성공:", data);
         navigate("/invite", { state: { travelId: data.travelId } });
-
-        console.log("선택된 날짜", formattedStartDate, "-", formattedEndDate);
       } else {
         alert("여행 생성 실패");
-        console.log("선택된 날짜", travelName);
-        console.log("선택된 날짜", formattedStartDate, "-", formattedEndDate);
       }
     } catch (error) {
       console.error("API 요청 중 오류:", error);

@@ -68,8 +68,7 @@ const SchedulePage: React.FC = () => {
   });
 
   return (
-    <RecoilRoot>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-[calc(100vh-56px)]">
         <div className="flex flex-1">
           {/* 일정 짜기 세션 */}
           <div className="w-1/3 h-screen border border-lightgray p-4 relative">
@@ -120,8 +119,6 @@ const SchedulePage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
       {/* 채팅 세션 */}
       <ChatWindow />
 
