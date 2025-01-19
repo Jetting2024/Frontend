@@ -35,7 +35,9 @@ const PendingAccessModal: React.FC = () => {
           }),
         });
 
-        console.log("Notification sent to host.");
+        console.log("Notification sent to host. 1");
+        
+        navigate('/loading');
       },
       onStompError: (frame) => {
         console.error("STOMP error in PendingAccessModal:", frame);

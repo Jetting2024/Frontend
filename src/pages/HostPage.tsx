@@ -2,20 +2,35 @@ import React, { useState, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import InviteResponseModal from "../components/modals/InviteResponseModal";
 
-const HostPage: React.FC = () => {
+interface HostProps {
+    travelId: number | undefined;
+    invitationLink: string | undefined;
+    invitedPerson: string | undefined;
+}
+
+const HostPage: React.FC<HostProps> = ({ travelId, invitationLink, invitedPerson}) => {
   const [inviteData, setInviteData] = useState<{
-    travelId: number;
-    invitationLink: string;
-    invitedPerson: string;
+    travelId: number | undefined;
+    invitationLink: string | undefined;
+    invitedPerson: string | undefined;
   } | null>(null);
 
   useEffect(() => {
+
+    setInviteData({
+        travelId: travelId,
+        invitationLink: invitationLink,
+        invitedPerson: invitedPerson
+    });
+
     const client = new Client({
       brokerURL: "ws://localhost:8080/ws",
       onConnect: () => {
         console.log("Connected to WebSocket");
 
-        client.subscribe(`/alert/${inviteData?.travelId}`, (message) => {
+        console.log(inviteData);
+
+        client.subscribe(`/sub/alert/${inviteData?.travelId}`, (message) => {
           const inviteClickData = JSON.parse(message.body);
           console.log("Received invitation:", inviteClickData);
 

@@ -5,9 +5,9 @@ import { authState } from "../../global/recoil/authAtoms";
 import { respondToInvite } from "../../invitation/InvitationService";
 
 interface InviteResponseModalProps {
-  travelId: number; // 초대받은 여행 ID
-  invitationLink: string; // 초대 링크
-  invitedPerson: string; // 초대받은 사람 이름
+  travelId: number | undefined; // 초대받은 여행 ID
+  invitationLink: string | undefined; // 초대 링크
+  invitedPerson: string | undefined; // 초대받은 사람 이름
   onClose: () => void; // 모달 닫기 핸들러
 }
 

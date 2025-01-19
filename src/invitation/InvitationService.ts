@@ -7,10 +7,10 @@ export const generateInvitation = async (travelId: number): Promise<string> => {
 };
 
 export const respondToInvite = async (
-    travelId: number,
-    invitation: string,
-    accept: boolean,
-    accessToken: string,
+    travelId: number | undefined,
+    invitation: string | undefined,
+    accept: boolean | undefined,
+    accessToken: string | undefined,
 ): Promise<string> => {
     
     const response = await axios.post(

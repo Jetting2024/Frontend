@@ -10,7 +10,7 @@ import {
   generateInvitation,
 } from "../../invitation/InvitationService";
 
-const InviteModal: React.FC<{ onShowHostPage: () => void }> = ({
+const InviteModal: React.FC<{ onShowHostPage: (invitationLink: string) => void }> = ({
   onShowHostPage,
 }) => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const InviteModal: React.FC<{ onShowHostPage: () => void }> = ({
   const [invitationLink, setInvitationLink] = useState<string>("");
 
   const handleInviteComplete = () => {
-    onShowHostPage();
+    onShowHostPage(invitationLink);
   }
 
   const handleGenerateInvitation = async () => {
