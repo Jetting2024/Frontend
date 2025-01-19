@@ -6,10 +6,11 @@ import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import Navbar from "./components/Navbar"; // NavBar 가져오기
+import LoginForm from "./components/signin/LoginForm";
+import RegisterForm from "./components/signup/RegisterForm";
+import Navbar from "./components/Navbar";
 import SchedulePage from "./pages/SchedulePage";
 import InviteFriendsPage from "./pages/InviteFriendsPage";
-import SelectDatePage from "./pages/SelectDatePage";
 import MyProfilePage from "./pages/MyProfilePage";
 import MyPlanListPage from "./pages/MyPlanListPage";
 import SelectRegionPage from "./pages/SelectRegionPage";
@@ -32,7 +33,7 @@ const App: React.FC = () => {
           <Route path="/recover" element={<RecoverPwdPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/invite" element={<InviteFriendsPage />} />
-          <Route path="/select-date" element={<SelectDatePage />} />
+          {/* <Route path="/select-date" element={<SelectDatePage />} /> */}
           <Route path="/my-profile" element={<MyProfilePage />} />
           <Route path="/my-plan" element={<MyPlanListPage />} />
           <Route path="/select-region" element={<SelectRegionPage />} />
@@ -40,6 +41,10 @@ const App: React.FC = () => {
           <Route path="/loading" element={<LoadingPage />} />
           <Route path="/member/kakao/callback" element={<OAuth2RedirectHandler />} />
           <Route path="/invite/:travelId/:invitationId" element={<PendingAccessModal />} />
+          <Route
+            path="/member/kakao/callback"
+            element={<OAuth2RedirectHandler />}
+          />
         </Routes>
       </Router>
     </RecoilRoot>
