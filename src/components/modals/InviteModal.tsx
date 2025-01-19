@@ -10,9 +10,7 @@ import {
   generateInvitation,
 } from "../../invitation/InvitationService";
 
-const InviteModal: React.FC<{ onShowHostPage: (invitationLink: string) => void }> = ({
-  onShowHostPage,
-}) => {
+const InviteModal: React.FC = () => {
   const navigate = useNavigate();
 
   const setChatRoomInfo = useSetRecoilState(chatRoomState);
@@ -29,7 +27,7 @@ const InviteModal: React.FC<{ onShowHostPage: (invitationLink: string) => void }
   const [invitationLink, setInvitationLink] = useState<string>("");
 
   const handleInviteComplete = () => {
-    onShowHostPage(invitationLink);
+    navigate('/schedule', { state: { travelId, invitationLink }});
   }
 
   const handleGenerateInvitation = async () => {
