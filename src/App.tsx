@@ -6,8 +6,6 @@ import HomePage from "./pages/HomePage";
 import RecoverPwdPage from "./pages/RecoverPwdPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import LoginForm from "./components/signin/LoginForm";
-import RegisterForm from "./components/signup/RegisterForm";
 import Navbar from "./components/Navbar";
 import SchedulePage from "./pages/SchedulePage";
 import InviteFriendsPage from "./pages/InviteFriendsPage";
@@ -17,9 +15,9 @@ import SelectRegionPage from "./pages/SelectRegionPage";
 import OAuth2RedirectHandler from "./auth/OAuth2RedirectHandler";
 import MakeChatPage from "./pages/MakeChatPage";
 import LoadingPage from "./pages/LoadingPage";
-import InviteLinkPage from "./pages/InviteLinkPage";
 import PendingAccessModal from "./components/modals/PendingAccessModal";
 import SelectDatePage from "./pages/SelectDatePage";
+import DayPickerPage from "./pages/DayPickerPage";
 
 const App: React.FC = () => {
   return (
@@ -46,6 +44,7 @@ const App: React.FC = () => {
             path="/member/kakao/callback"
             element={<OAuth2RedirectHandler />}
           />
+          <Route path="/day-picker" element={<DayPickerPage />} />
         </Routes>
       </Router>
     </RecoilRoot>
