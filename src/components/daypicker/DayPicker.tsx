@@ -5,6 +5,8 @@ import "./custom.css";
 import { ko } from "date-fns/locale";
 import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { IoCloseCircleOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const MONTHS = [
   "1월",
@@ -37,6 +39,8 @@ const DayPicker: React.FC<DayPickerProps> = ({
   setEndDate,
   onConfirm,
 }) => {
+  const navigate = useNavigate();
+
   const [selectedYear, setSelectedYear] = React.useState<number>(getYear(new Date()));
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
@@ -63,7 +67,12 @@ const DayPicker: React.FC<DayPickerProps> = ({
   };
 
   return (
-    <div className="datepicker-frame w-[517px] h-[620px]">
+    <div className="datepicker-frame w-[517px] h-[580px]">
+      <div className=" w-full flex justify-end -mt-8 mr-2">
+        <button>
+          <IoCloseCircleOutline size={24} onClick={() => navigate(-1)} />
+        </button>
+      </div>
       <div className="font-bold text-[1.2rem] mb-2">언제 가시나요?</div>
       <div className="font-bold text-[1.2rem] mb-4">날짜를 선택해주세요.</div>
       <div>

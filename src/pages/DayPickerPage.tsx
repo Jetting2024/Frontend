@@ -42,8 +42,8 @@ const DayPickerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="w-[900px] h-[700px] p-6 bg-white flex justify-center items-center">
+    <div className=" w-full h-[calc(100vh-56px)] relative bg-gray bg-opacity-30">
+      <div className="absolute inset-0 flex justify-center items-center">
         <DayPicker
           startDate={startDate}
           setStartDate={setStartDate}
