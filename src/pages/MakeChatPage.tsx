@@ -3,7 +3,7 @@ import MakeRoomModal from "../components/modals/MakeRoomModal";
 
 const MakeChatPage: React.FC = () => {
   return (
-    <div className="w-full h-screen relative bg-gray bg-opacity-30">
+    <div className="w-full h-[calc(100vh-56px)] relative bg-gray bg-opacity-30">
       <div className=" absolute inset-0 flex justify-center items-center">
         <MakeRoomModal />
       </div>

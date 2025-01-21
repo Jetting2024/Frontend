@@ -5,7 +5,8 @@ interface ChatRoomState {
     userId : string | null;
     member : string | null;
     roomName : string | null;
-    date: string | null;
+    startDate: string | null;
+    endDate: string | null;
 }
 
 export const chatRoomState = atom<ChatRoomState>({
@@ -15,6 +16,7 @@ export const chatRoomState = atom<ChatRoomState>({
         userId: null,
         member: null,
         roomName : null,
-        date: null,
+        startDate: null,
+        endDate: null,
     },
 });
