@@ -5,11 +5,12 @@ import ChatInfo from "./ChatInfo";
 import MessageInput from "./MessageInput";
 import MessageItem from "./MessageItem";
 import TodayDate from "./TodayDate";
-import { Client } from "@stomp/stompjs";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import axios from "axios";
+import { webSocketClientState } from "../../global/recoil/webSocketAtom";
+import { initializeWebSocketClient } from "../../global/recoil/webSocketSelector";
 
 interface ChatMessage {
   roomId: string | null;
@@ -19,16 +20,16 @@ interface ChatMessage {
 
 const ChatWindow: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
-  
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const readRoomInfo = useRecoilValue(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
-  const roomId = "5";
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [client, setClient] = useRecoilState(webSocketClientState);
+  const initializedClient = useRecoilValue(initializeWebSocketClient);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const clientRef = useRef<Client | null>(null);
-  const subscriptionRef = useRef<string | null>(null);
+  const roomId = "5"; // Room ID를 고정값으로 설정
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -46,12 +47,12 @@ const ChatWindow: React.FC = () => {
       message: newMessage,
     };
 
-    if (clientRef.current && clientRef.current.connected) {
-      clientRef.current.publish({
+    if (client?.connected) {
+      client.publish({
         destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
       });
-
+      console.log("Message sent:", chatMessage);
     } else {
       console.log("WebSocket is not connected.");
     }
@@ -62,52 +63,36 @@ const ChatWindow: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (!roomId) {
+    if (!client) {
+      console.log("Initializing WebSocket client...");
+      setClient(initializedClient); // WebSocket 클라이언트 초기화
       return;
     }
 
-    const stompClient = new Client({
-      brokerURL: "ws://localhost:8080/ws",
-      onConnect: () => {
-        console.log(`[STOMP] Connected to room ${roomId}.`);
-        // 메시지 구독
-        const subscription = stompClient.subscribe(
-          `/sub/chat/room/${roomId}`,
-          (message) => {
-            try {
-              // 메시지가 JSON인지 확인하고 파싱
-              const receivedMessage = JSON.parse(message.body);
-              console.log("[STOMP] JSON Message received:", receivedMessage);
-              setMessages((prev) => [...prev, receivedMessage]);
-            } catch (error) {
-              // JSON 파싱 실패 시 메시지를 문자열로 처리
-              console.warn("[STOMP] Non-JSON Message received:", message.body);
-              setMessages((prev) => [
-                ...prev,
-                { roomId: roomId, userId: readAuthInfo.id, message: message.body },
-              ]);
-            }
-          }
-        );
+    if (!client.connected) {
+      console.log("Waiting for WebSocket connection...");
+      return;
+    }
 
-        subscriptionRef.current = subscription.id;
-      },
-      onDisconnect: () => {
-        console.log("[STOMP] Disconnected.");
-      },
-      onStompError: (error) => {
-        console.error("[STOMP] ERROR: ", error);
-      },
+    const subscription = client.subscribe(`/sub/chat/room/${roomId}`, (message) => {
+      try {
+        const receivedMessage = JSON.parse(message.body);
+        console.log("[STOMP] JSON Message received:", receivedMessage);
+        setMessages((prev) => [...prev, receivedMessage]);
+      } catch (error) {
+        console.warn("[STOMP] Non-JSON Message received:", message.body);
+        setMessages((prev) => [
+          ...prev,
+          { roomId: roomId, userId: readAuthInfo.id, message: message.body },
+        ]);
+      }
     });
 
-    stompClient.activate();
-    clientRef.current = stompClient;
-
     return () => {
-      stompClient.deactivate();
-      console.log("[STOMP] Connection closed.");
+      subscription.unsubscribe();
+      console.log(`[STOMP] Unsubscribed from /sub/chat/room/${roomId}`);
     };
-  }, [roomId, readAuthInfo.accessToken]);
+  }, [roomId, client, readAuthInfo.id]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -135,7 +120,7 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [roomId, readAuthInfo.accessToken]);
+  }, [roomId, client, initializedClient, setClient, readAuthInfo.accessToken]);
 
   return (
     <section

@@ -29,7 +29,6 @@ interface DayPickerProps {
   setStartDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
   endDate: Date | undefined;
   setEndDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
-  onConfirm: () => void; // 날짜 선택 완료 시 호출할 함수
 }
 
 const DayPicker: React.FC<DayPickerProps> = ({
@@ -37,11 +36,11 @@ const DayPicker: React.FC<DayPickerProps> = ({
   setStartDate,
   endDate,
   setEndDate,
-  onConfirm,
 }) => {
   const navigate = useNavigate();
 
   const [selectedYear, setSelectedYear] = React.useState<number>(getYear(new Date()));
+  const navigator = useNavigate();
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates) {
@@ -64,6 +63,33 @@ const DayPicker: React.FC<DayPickerProps> = ({
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedYear(Number(event.target.value));
+  };
+
+  const selectDate = () => {
+    if (!startDate || !endDate) {
+      alert("날짜를 선택해주세요.");
+      return;
+    }
+
+    // 년도와 날짜 포맷
+    const year = selectedYear ? `${selectedYear}년` : "";
+    const start = startDate
+      ? `${startDate.getMonth() + 1}월 ${startDate.getDate()}일`
+      : "";
+    const end = endDate
+      ? `${endDate.getMonth() + 1}월 ${endDate.getDate()}일`
+      : "";
+
+    // 숙박 일수 계산
+    const nights =
+      endDate && startDate
+        ? Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+        : 0;
+
+    const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
+    navigator("/make-room", { state: { fullDate } });
   };
 
   return (
@@ -123,7 +149,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
           }}
         />
         <div className="button-container">
-          <button className="button1" onClick={onConfirm}>
+          <button className="button1" onClick={selectDate}>
             선택
           </button>
         </div>

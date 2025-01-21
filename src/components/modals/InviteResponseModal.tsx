@@ -1,56 +1,76 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoCloseOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
-import { respondToInvite } from "../../invitation/InvitationService";
+import { Client } from "@stomp/stompjs";
+import connectWebSocket from "../../socket/connectWebSocket";
 
 interface InviteResponseModalProps {
-  travelId: number | undefined; // 초대받은 여행 ID
-  invitationLink: string | undefined; // 초대 링크
-  invitedPerson: string | undefined; // 초대받은 사람 이름
-  onClose: () => void; // 모달 닫기 핸들러
+  travelId: number | undefined;
+  inviteeId: number | undefined;
+  onClose: () => void;
+}
+
+interface InviteStatusDto {
+  travelId: number | null;
+  inviteeId: number | null;
+  status: string | null;
 }
 
 const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
   travelId,
-  invitationLink,
-  invitedPerson,
+  inviteeId,
   onClose,
 }) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const [responseMessage, setResponseMessage] = useState<string>("");
-
   const readAuthState = useRecoilValue(authState);
+  const invitedPerson = "지원이";
 
-  const RespondToInvitation = async (accept: boolean) => {
-    if (!readAuthState.accessToken) {
+  const clientRef = useRef<Client | null>(null);
+
+  const [status, setStatus] = useState<InviteStatusDto[]>([]);
+
+  useEffect(() => {
+    const client = connectWebSocket((stompClient) => {
+      stompClient.subscribe("/alert/5", (message) => {
+        const result = JSON.parse(message.body) as InviteStatusDto;
+        setStatus((prev) => [...prev, result]);
+      });
+    });
+
+    clientRef.current = client;
+
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.deactivate();
+      }
+    };
+  }, []);
+
+  const handleResponse = (status: "ACCEPT" | "REFUSE") => {
+    if (!inviteeId) {
+      console.error("Invitee ID is undefined.");
       return;
     }
-    try {
-      const message = await respondToInvite(
-        travelId,
-        invitationLink,
-        accept,
-        readAuthState.accessToken
-      );
-      setResponseMessage(message);
-      console.log("message: ", message);
-      onClose(); // 응답 후 모달 닫기
-    } catch (error) {
-      console.log("failed to respond to invitation: ", error);
+
+    if (clientRef.current) {
+      clientRef.current.publish({
+        destination: "/pub/inviteResponse",
+        body: JSON.stringify({
+          travelId: 5,
+          inviteeId: 2,
+          status: status,
+        }),
+      });
+      console.log("보냄");
+    } else {
+      console.error("WebSocket client is not initialized.");
     }
   };
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
     <div className="w-[26rem] h-20 flex items-center justify-center bg-zinc-800 rounded-xl p-4 gap-4">
-      {/* 아이콘 */}
       <IoPersonCircleOutline size={28} fill="#fff" />
 
-      {/* 텍스트 영역 */}
       <div className="w-auto flex flex-col flex-1 max-w-[12rem]">
         <span className="text-white text-[0.8rem] whitespace-nowrap overflow-hidden text-ellipsis block">
           "{invitedPerson}"
@@ -58,17 +78,16 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
         <span className="text-white text-[0.8rem]">님을 초대하시겠습니까?</span>
       </div>
 
-      {/* 버튼 및 닫기 아이콘 */}
       <div className="flex flex-row gap-2 items-center">
         <button
           className="text-red-300 text-[0.8rem] hover:text-red-400"
-          onClick={() => RespondToInvitation(false)}
+          onClick={() => handleResponse("REFUSE")}
         >
           거부
         </button>
         <button
           className="px-4 py-1 text-white text-[0.8rem] rounded-lg border border-gray hover:bg-gray"
-          onClick={() => RespondToInvitation(true)}
+          onClick={() => handleResponse("ACCEPT")}
         >
           수락
         </button>
@@ -77,6 +96,7 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
           stroke="#fff"
           className="cursor-pointer"
           onClick={onClose}
+          aria-label="Close Modal"
         />
       </div>
     </div>

@@ -36,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const SelectRegion = (region: string) => {
     setTravelName(region);
-    navigate("/day-picker", { state: { travelName: region } });
+    navigate("/select-date", { state: { travelName: region } });
     console.log("선택된 지역", region);
   };
 
