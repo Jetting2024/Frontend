@@ -256,7 +256,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                     <div className="flex flex-col gap-1 w-full">
                       {/* 가게 이름, 시간 */}
                       <div className="flex items-center justify-between">
-                        <p className="text-[20px] font-bold">{item.title}</p>
+                        <p className="text-[18px] font-bold">{item.title}</p>
                         {isOwner && (
                           <button
                             onClick={() => toggleTimePicker(item.id)}

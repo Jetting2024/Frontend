@@ -4,12 +4,16 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
 
 interface SearchResult {
-  title: string;
-  address: string;
-  category: string;
-  telephone: string;
+  address_name: string;
+  id: string;
+  place_name: string;
+  place_url: string;
   lat: number;
   lng: number;
+}
+interface SearchProps {
+  dayIndex: number;
+  addLocation: (dayIndex: number, title: string, location: string) => void;
 }
 
 const Search: React.FC = () => {
@@ -46,9 +50,6 @@ const Search: React.FC = () => {
         }
       );
 
-      // 응답 데이터 확인
-      console.log("API 전체 응답 데이터:", response.data);
-
       const rawResult = response.data.result;
 
       const fixedResult = rawResult
@@ -67,13 +68,11 @@ const Search: React.FC = () => {
         .replace(/"category_group_name":.*?,/g, "")
         .replace(/"category_name":.*?,/g, "")
         .replace(/"distance":.*?,/g, "")
-        .replace(/"phone":.*?,/g, "") // phone 필드 제거
-        .replace(/"road_address_name":.*?,/g, ""); // road_address_name 필드 제거
-      console.log("수정된 JSON 문자열:", fixedResult);
+        .replace(/"phone":.*?,/g, "")
+        .replace(/"road_address_name":.*?,/g, "");
 
       // JSON 파싱
       const parsedResult = JSON.parse(fixedResult);
-      console.log("파싱된 result 데이터:", parsedResult);
 
       // 필요한 데이터만 추출
       const items = parsedResult.map((item: any) => ({
@@ -94,6 +93,12 @@ const Search: React.FC = () => {
     }
   };
 
+  const handleAdd = (place: SearchResult) => {
+    // 장소 추가 로직 구현
+    console.log("추가된 장소:", place);
+    alert(`${place.place_name}이(가) 추가되었습니다.`);
+  };
+
   return (
     <div className="p-4">
       {/* 검색 바 */}
@@ -110,31 +115,42 @@ const Search: React.FC = () => {
             }
           }}
         />
-        <button
+        {/* <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          className="py-2 px-4 rounded hover:bg-lightblue"
         >
           검색
-        </button>
+        </button> */}
       </div>
 
       {loading && <p>검색 중입니다...</p>}
 
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* 검색 결과 */}
       <div>
-        <h2 className="text-lg font-bold mb-2">검색 결과:</h2>
-        <ul className="list-disc pl-4">
+        <ul>
           {results.map((result, index) => (
-            <li key={index} className="mb-4 border p-2 rounded shadow">
-              <h3 className="font-bold">{result.title}</h3>
-              <p>주소: {result.address}</p>
-              <p>카테고리: {result.category}</p>
-              <p>전화번호: {result.telephone}</p>
-              <p>
-                위도: {result.lat}, 경도: {result.lng}
-              </p>
+            <li
+              key={index}
+              className="mb-6 border p-4 rounded-lg cursor-pointer"
+            >
+              <div className="flex justify-between items-center">
+                <div
+                  onClick={() => window.open(result.place_url, "_blank")}
+                  className="cursor-pointer"
+                >
+                  <h2 className="font-bold text-[18px]">{result.place_name}</h2>
+                  <p className="text-gray text-sm mt-1">
+                    {result.address_name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleAdd(result)}
+                  className="bg-lightgray text-black py-1 px-3 rounded-full hover:bg-black hover:text-white"
+                >
+                  추가
+                </button>
+              </div>
             </li>
           ))}
         </ul>
