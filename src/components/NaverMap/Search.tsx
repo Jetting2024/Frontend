@@ -26,7 +26,7 @@ const Search: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/search`, {
+      const response = await axios.get(`http://localhost:8080/travel/search`, {
         params: {
           query,
           display: 5, // 최대 5개의 결과

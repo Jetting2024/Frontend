@@ -6,6 +6,8 @@ import { ko } from "date-fns/locale"; // 한국어 설정
 import { getMonth, getYear } from "date-fns";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa"; // react-icons에서 아이콘 사용
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
 
 const MONTHS = [
   "1월",
@@ -29,6 +31,8 @@ const DayPicker: React.FC = () => {
   const navigator = useNavigate();
   const location = useLocation();
   const { travelName } = location.state || { travelName: "" }; // 이전 페이지에서 전달받은 travelName
+
+  const readAuthState = useRecoilValue(authState);
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates) {
@@ -81,24 +85,36 @@ const DayPicker: React.FC = () => {
     const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
     navigator("/make-room", { state: { fullDate } });
 
+    // 날짜 포맷팅 (xxxx-xx-xx 형식)
+    const formatDate = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0"); // 월 2자리
+      const day = String(date.getDate()).padStart(2, "0"); // 일 2자리
+      return `${year}-${month}-${day}`;
+    };
+
+    const formattedStartDate = startDate ? formatDate(startDate) : null;
+    const formattedEndDate = endDate ? formatDate(endDate) : null;
+
     try {
       const response = await fetch("http://localhost:8080/travel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${readAuthState.accessToken}`,
         },
         body: JSON.stringify({
           travelName,
-          startDate: startDate,
-          endDate: endDate,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("result:", data.result);
+        console.log("travelId:", data.result);
       } else {
-        console.error("여행 생성 실패:", response.statusText);
+        console.error("여행 생성 실패:", response);
         alert("여행 생성에 실패했습니다.");
       }
     } catch (error) {
