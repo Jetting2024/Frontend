@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
 
 interface SearchResult {
   title: string;
@@ -16,8 +18,10 @@ const Search: React.FC = () => {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [error, setError] = useState<string | null>(null); // 에러 상태
 
+  const readAuthState = useRecoilValue(authState);
+
   const handleSearch = async () => {
-    if (!query.trim) {
+    if (!query.trim()) {
       alert("검색어를 입력하세요.");
       return;
     }
@@ -26,28 +30,62 @@ const Search: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/travel/search`, {
-        params: {
-          query,
-          display: 5, // 최대 5개의 결과
-        },
-      });
-
-      if (response.status === 200) {
-        const items = response.data.items.map((item: any) => ({
-          title: item.title.replace(/<\/?b>/g, ""), // HTML 태그 제거
-          address: item.roadAddress,
-          category: item.category,
-          telephone: item.telephone || "없음",
-          lat: parseFloat(item.mapy), // 위도
-          lng: parseFloat(item.mapx), // 경도
-        }));
-
-        setResults(items);
-      } else {
-        setError("API 요청 실패");
-        console.error("API 요청 실패:", response);
+      if (!readAuthState.accessToken) {
+        alert("로그인이 필요합니다.");
+        return;
       }
+
+      const response = await axios.get(
+        `http://localhost:8080/travel/kakao/searchKeyword`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${readAuthState.accessToken}`,
+          },
+          params: { query },
+        }
+      );
+
+      // 응답 데이터 확인
+      console.log("API 전체 응답 데이터:", response.data);
+
+      const rawResult = response.data.result;
+
+      const fixedResult = rawResult
+        .replace(/=/g, ":") // '='를 ':'로 변환
+        .replace(/([a-zA-Z0-9_]+):/g, '"$1":') // 키를 큰따옴표로 감싸기
+        .replace(/:\s*([^,\}\]]+)/g, (match: any, p1: any) => {
+          if (["null", "true", "false"].includes(p1)) return `: ${p1}`;
+          return /^[-+]?\d+(\.\d+)?$/.test(p1) ? `: ${p1}` : `: "${p1}"`;
+        })
+        .replace(/,\s*(?=[}\]])/g, "") // 닫는 괄호 앞의 쉼표 제거
+        .replace(/,\s*$/g, "") // 문자열 끝의 쉼표 제거
+        .replace(/:\s*,/g, ": null,") // 빈 값을 null로 대체
+        .replace(/"place_url": ""http":/g, '"place_url": "http:') // 잘못된 따옴표 수정
+        .replace(/[^"]+>[^"]+/g, "") // 잘못된 텍스트 제거
+        .replace(/"category_group_code":.*?,/g, "") // 불필요한 필드 제거
+        .replace(/"category_group_name":.*?,/g, "")
+        .replace(/"category_name":.*?,/g, "")
+        .replace(/"distance":.*?,/g, "")
+        .replace(/"phone":.*?,/g, "") // phone 필드 제거
+        .replace(/"road_address_name":.*?,/g, ""); // road_address_name 필드 제거
+      console.log("수정된 JSON 문자열:", fixedResult);
+
+      // JSON 파싱
+      const parsedResult = JSON.parse(fixedResult);
+      console.log("파싱된 result 데이터:", parsedResult);
+
+      // 필요한 데이터만 추출
+      const items = parsedResult.map((item: any) => ({
+        address_name: item.address_name || "주소 없음",
+        id: item.id || "알 수 없음",
+        place_name: item.place_name || "알 수 없음",
+        place_url: item.place_url || "없음",
+        lat: parseFloat(item.y),
+        lng: parseFloat(item.x),
+      }));
+
+      setResults(items);
     } catch (error) {
       console.error("API 요청 중 오류 발생:", error);
       setError("API 요청 중 오류가 발생했습니다.");
