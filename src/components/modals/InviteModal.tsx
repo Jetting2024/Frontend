@@ -6,9 +6,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import { IoCloseCircleOutline } from "react-icons/io5";
-import {
-  generateInvitation,
-} from "../../invitation/InvitationService";
+import { generateInvitation } from "../../invitation/InvitationService";
 
 const InviteModal: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +18,11 @@ const InviteModal: React.FC = () => {
   const member = "유지원, 조윤주";
   const date = location.state?.fullDate;
   const name = location.state?.roomName;
+
+  const fullDate = location.state?.fullDate;
+  const roomName = location.state?.roomName;
+  const startDate = location.state?.startDate;
+  const endDate = location.state?.endDate;
 
   const readAuthState = useRecoilValue(authState);
 
@@ -69,7 +72,7 @@ const InviteModal: React.FC = () => {
 
       const roomId = response.data.result;
       console.log("created chat room ID: ", roomId);
-      console.log('response : ', response);
+      console.log("response : ", response);
 
       if (response.data.success) {
         try {
@@ -81,20 +84,26 @@ const InviteModal: React.FC = () => {
               },
             }
           );
-          console.log('roomInfo: ', roomInfo);
-  
+          console.log("roomInfo: ", roomInfo);
+
           const userId = readAuthState.id;
           const member = roomInfo.data.result.member;
           const roomName = roomInfo.data.result.roomName;
-  
+
           setChatRoomInfo({ roomId, userId, member, roomName, date });
         } catch (error) {
-          console.log('error: ', error)
+          console.log("error: ", error);
         }
       }
-      navigate("/schedule");
+      navigate("/schedule", { state: { fullDate, roomName } });
+      console.log("상태전달:", fullDate, roomName);
     } catch (err) {
       console.log(err);
+      //임시 나중에 지우기ㅠㅠ
+      navigate("/schedule", {
+        state: { fullDate, roomName, startDate, endDate },
+      });
+      console.log("상태전달:", fullDate, roomName, startDate, endDate);
     }
   };
 
@@ -126,12 +135,12 @@ const InviteModal: React.FC = () => {
             <button onClick={handleCopyLink}>복사</button>
           </div>
         </div>
-          <button 
+        <button
           className=" w-28 h-12 mt-6 bg-black text-white rounded-lg hover:bg-gray"
           onClick={goSchedule}
-          >
-            초대 완료
-          </button>
+        >
+          초대 완료
+        </button>
       </div>
     </div>
   );

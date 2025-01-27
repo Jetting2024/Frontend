@@ -3,6 +3,7 @@ import { format, differenceInDays, addDays } from "date-fns"; // date-fns 사용
 import AlertModal from "../components/AlertModal";
 import TimePicker from "../components/timeSetModal/TimePicker";
 import DirectInputButton from "../components/DirectInputButton";
+import { useLocation } from "react-router-dom";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -22,6 +23,10 @@ const Schedule: React.FC<ScheduleProps> = ({
   //scheduleData,
   addLocation,
 }) => {
+  const location = useLocation();
+  const fullDate = location.state?.fullDate;
+  const roomName = location.state?.roomName;
+
   const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
   const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
   const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
@@ -140,17 +145,20 @@ const Schedule: React.FC<ScheduleProps> = ({
     setIsEditModalOpen(false);
   };
 
-  // 날짜별 "n일차" 생성 로직
   useEffect(() => {
-    const [start, end] = tripDates.split(" ~ ").map((date) => new Date(date));
-    const numDays = differenceInDays(end, start) + 1;
+    if (location.state?.startDate && location.state?.endDate) {
+      const startDate = new Date(location.state.startDate);
+      const endDate = new Date(location.state.endDate);
 
-    const labels = Array.from({ length: numDays }, (_, i) =>
-      format(addDays(start, i), "yyyy-MM-dd")
-    );
-
-    setDayLabels(labels); // 상태 업데이트
-  }, [tripDates]);
+      const numDays = differenceInDays(endDate, startDate) + 1;
+      const labels = Array.from({ length: numDays }, (_, i) =>
+        format(addDays(startDate, i), "yyyy-MM-dd")
+      );
+      setDayLabels(labels);
+    } else {
+      console.error("Missing startDate or endDate in location.state");
+    }
+  }, [location.state]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
     const newId =
@@ -230,7 +238,7 @@ const Schedule: React.FC<ScheduleProps> = ({
           onConfirm={handleConfirmEdit}
           onClose={() => setIsEditModalOpen(false)}
         />
-
+        {/* 여행 정보 */}
         <div className="mb-4 mt-8 text-center">
           <p>{participants.join(", ")}의</p>
           <h2 className="text-2xl font-bold">{tripTitle}</h2>
@@ -288,7 +296,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                 {isOwner && (
                   <div className="flex mt-6 gap-2 text-center">
                     <button
-                      onClick={addLocation}
+                      onClick={() => addLocation()}
                       className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
                     >
                       장소 추가

@@ -83,7 +83,7 @@ const DayPicker: React.FC = () => {
         : 0;
 
     const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
-    navigator("/make-room", { state: { fullDate } });
+    navigator("/make-room", { state: { fullDate, startDate, endDate } });
 
     // 날짜 포맷팅 (xxxx-xx-xx 형식)
     const formatDate = (date: Date): string => {
