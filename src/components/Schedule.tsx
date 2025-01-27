@@ -24,18 +24,18 @@ const Schedule: React.FC<ScheduleProps> = ({
   addLocation,
 }) => {
   const location = useLocation();
-  const fullDate = location.state?.fullDate;
-  const roomName = location.state?.roomName;
+  const { roomName, startDate, endDate } = location.state || {};
 
-  const [participants, setParticipants] = useState(["하은", "재혁"]); // 참여자 리스트
-  const [tripTitle, setTripTitle] = useState("두근두근 후꾸까가까"); // 여행 제목
-  const [tripDates, setTripDates] = useState("2024-11-05 ~ 2024-11-09"); // 여행 날짜
-  const [dayLabels, setDayLabels] = useState<string[]>([]); // "n일차" 텍스트 배열
+  const [participants, setParticipants] = useState<string[]>(["하은", "재혁"]); // 초기값 임시 설정
+  const [tripTitle, setTripTitle] = useState(roomName || "새로운 여행");
+  const [tripDates, setTripDates] = useState("");
+
+  const [dayLabels, setDayLabels] = useState<string[]>([]); // "n일차"
 
   const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // 수정 모달 열림 상태
-  const [modalType, setModalType] = useState(""); // 수정할 항목을 저장 (참여자, 제목, 날짜)
-  const [editValue, setEditValue] = useState(""); // 수정할 값
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [editValue, setEditValue] = useState("");
 
   const [scheduleData, setScheduleData] = useState<{
     [dayIndex: number]: ScheduleItem[];
@@ -145,20 +145,24 @@ const Schedule: React.FC<ScheduleProps> = ({
     setIsEditModalOpen(false);
   };
 
+  // 상태 업데이트: 날짜 범위와 참가자 리스트
   useEffect(() => {
-    if (location.state?.startDate && location.state?.endDate) {
-      const startDate = new Date(location.state.startDate);
-      const endDate = new Date(location.state.endDate);
+    if (startDate && endDate) {
+      const parsedStartDate = format(new Date(startDate), "yyyy-MM-dd");
+      const parsedEndDate = format(new Date(endDate), "yyyy-MM-dd");
+      setTripDates(`${parsedStartDate} ~ ${parsedEndDate}`);
 
-      const numDays = differenceInDays(endDate, startDate) + 1;
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const numDays = differenceInDays(end, start) + 1;
       const labels = Array.from({ length: numDays }, (_, i) =>
-        format(addDays(startDate, i), "yyyy-MM-dd")
+        format(addDays(start, i), "yyyy-MM-dd")
       );
       setDayLabels(labels);
     } else {
-      console.error("Missing startDate or endDate in location.state");
+      console.error("오류 발생");
     }
-  }, [location.state]);
+  }, [startDate, endDate, roomName]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
     const newId =
