@@ -16,13 +16,18 @@ interface SearchProps {
   addLocation: (dayIndex: number, title: string, location: string) => void;
 }
 
-const Search: React.FC = () => {
+const Search: React.FC<SearchProps> = ({ dayIndex, addLocation }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [error, setError] = useState<string | null>(null); // 에러 상태
 
   const readAuthState = useRecoilValue(authState);
+
+  const handleAdd = (title: string, location: string) => {
+    addLocation(dayIndex, title, location); // 선택된 날짜에 장소 추가
+    alert(`${title}이(가) 추가되었습니다.`);
+  };
 
   const handleSearch = async () => {
     if (!query.trim()) {
@@ -34,6 +39,7 @@ const Search: React.FC = () => {
     setError(null);
 
     try {
+      console.log("토큰:", readAuthState.accessToken);
       if (!readAuthState.accessToken) {
         alert("로그인이 필요합니다.");
         return;
@@ -93,12 +99,6 @@ const Search: React.FC = () => {
     }
   };
 
-  const handleAdd = (place: SearchResult) => {
-    // 장소 추가 로직 구현
-    console.log("추가된 장소:", place);
-    alert(`${place.place_name}이(가) 추가되었습니다.`);
-  };
-
   return (
     <div className="p-4">
       {/* 검색 바 */}
@@ -145,7 +145,9 @@ const Search: React.FC = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => handleAdd(result)}
+                  onClick={() =>
+                    handleAdd(result.place_name, result.address_name)
+                  }
                   className="bg-lightgray text-black py-1 px-3 rounded-full hover:bg-black hover:text-white"
                 >
                   추가

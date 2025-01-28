@@ -18,11 +18,10 @@ interface ScheduleItem {
   location: string;
 }
 
-const Schedule: React.FC<ScheduleProps> = ({
-  isOwner,
-  //scheduleData,
-  addLocation,
-}) => {
+const Schedule: React.FC<{
+  isOwner: boolean;
+  toggleSearch: (dayIndex: number) => void;
+}> = ({ isOwner, toggleSearch }) => {
   const location = useLocation();
   const { roomName, startDate, endDate } = location.state || {};
 
@@ -37,9 +36,11 @@ const Schedule: React.FC<ScheduleProps> = ({
   const [modalType, setModalType] = useState("");
   const [editValue, setEditValue] = useState("");
 
-  const [scheduleData, setScheduleData] = useState<{
-    [dayIndex: number]: ScheduleItem[];
-  }>({});
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]); // 날짜별 일정 데이터
+
+  const handleAddLocation = (dayIndex: number) => {
+    toggleSearch(dayIndex); // 날짜 인덱스를 상위로 전달
+  };
 
   const [page, setPage] = useState(1);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -82,21 +83,43 @@ const Schedule: React.FC<ScheduleProps> = ({
     }));
   };
 
+  // const loadMoreItems = useCallback(() => {
+  //   const allItems = Object.values(scheduleData).flat(); // 객체의 값을 배열로 변환 후 평탄화
+  //   const nextItems = allItems.slice(page * 10, (page + 1) * 10);
+
+  //   if (nextItems.length > 0) {
+  //     const newScheduleData = [...allItems, ...nextItems];
+  //     const groupedData = newScheduleData.reduce<{
+  //       [dayIndex: number]: ScheduleItem[];
+  //     }>((acc, item) => {
+  //       const dayIndex = Math.floor((item.id - 1) / 10); // 그룹화 기준
+  //       acc[dayIndex] = acc[dayIndex] ? [...acc[dayIndex], item] : [item];
+  //       return acc;
+  //     }, {});
+
+  //     setScheduleData(groupedData);
+  //     setPage((prev) => prev + 1);
+  //   }
+  // }, [page, scheduleData]);
+
   const loadMoreItems = useCallback(() => {
-    const allItems = Object.values(scheduleData).flat(); // 객체의 값을 배열로 변환 후 평탄화
-    const nextItems = allItems.slice(page * 10, (page + 1) * 10);
+    const allItems = scheduleData.flat(); // 평탄화된 배열 가져오기
+    const nextItems = allItems.slice(page * 10, (page + 1) * 10); // 다음 항목 가져오기
 
     if (nextItems.length > 0) {
-      const newScheduleData = [...allItems, ...nextItems];
-      const groupedData = newScheduleData.reduce<{
-        [dayIndex: number]: ScheduleItem[];
-      }>((acc, item) => {
-        const dayIndex = Math.floor((item.id - 1) / 10); // 그룹화 기준
-        acc[dayIndex] = acc[dayIndex] ? [...acc[dayIndex], item] : [item];
-        return acc;
-      }, {});
+      const newScheduleData = [...allItems, ...nextItems]; // 기존 + 추가된 항목
 
-      setScheduleData(groupedData);
+      // 배열을 날짜별로 그룹화하여 ScheduleItem[][] 형식으로 변환
+      const groupedData: ScheduleItem[][] = [];
+      newScheduleData.forEach((item) => {
+        const dayIndex = Math.floor((item.id - 1) / 10); // 날짜 그룹화 기준
+        if (!groupedData[dayIndex]) {
+          groupedData[dayIndex] = [];
+        }
+        groupedData[dayIndex].push(item);
+      });
+
+      setScheduleData(groupedData); // ScheduleItem[][]로 상태 업데이트
       setPage((prev) => prev + 1);
     }
   }, [page, scheduleData]);
@@ -145,7 +168,6 @@ const Schedule: React.FC<ScheduleProps> = ({
     setIsEditModalOpen(false);
   };
 
-  // 상태 업데이트: 날짜 범위와 참가자 리스트
   useEffect(() => {
     if (startDate && endDate) {
       const parsedStartDate = format(new Date(startDate), "yyyy-MM-dd");
@@ -165,10 +187,13 @@ const Schedule: React.FC<ScheduleProps> = ({
   }, [startDate, endDate, roomName]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
+    // const newId =
+    //   Object.values(scheduleData)
+    //     .flat()
+    //     .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
     const newId =
-      Object.values(scheduleData)
-        .flat()
-        .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+      scheduleData.flat().reduce((maxId, item) => Math.max(maxId, item.id), 0) +
+      1;
 
     const newItem: ScheduleItem = {
       id: newId,
@@ -300,7 +325,7 @@ const Schedule: React.FC<ScheduleProps> = ({
                 {isOwner && (
                   <div className="flex mt-6 gap-2 text-center">
                     <button
-                      onClick={() => addLocation()}
+                      onClick={() => handleAddLocation(index)}
                       className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
                     >
                       장소 추가

@@ -15,6 +15,7 @@ const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearchInput, setIsSearchInput] = useState(false);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null); // 선택된 날짜 인덱스 관리
 
   const toggleChat = () => {
     if (isSearchOpen) {
@@ -23,26 +24,25 @@ const SchedulePage: React.FC = () => {
     setIsChatOpen(!isChatOpen);
   };
 
-  const toggleSearch = () => {
+  const toggleSearch = (dayIndex: number) => {
     if (isChatOpen) {
       setIsChatOpen(false);
     }
     setIsSearchOpen(!isSearchOpen);
+    setSelectedDayIndex(dayIndex); // 선택된 날짜 저장
   };
 
   const handleSearchInputClose = () => {
     setIsSearchInput(false); // 기존으로 복귀
   };
 
-  const scheduleData = [
-    {
-      id: 1,
-      title: "이치란 본점",
-      time: "AM 10:00~ AM 11:00",
-      location: "5 Chome-3-2 Nakasu, Hakata Ward, Fukuoka",
-      photo: "",
-    },
-  ];
+  const toggleSearchHandler = () => {
+    toggleSearch(0); // 임의로 dayIndex 0을 전달
+  };
+
+  const addLocation = (dayIndex: number, title: string, location: string) => {
+    console.log(`Day ${dayIndex + 1}: ${title} (${location}) 추가됨`);
+  };
 
   return (
     <RecoilRoot>
@@ -51,17 +51,19 @@ const SchedulePage: React.FC = () => {
           {/* 일정 짜기 세션 */}
           <div className="w-1/3 h-screen border border-lightgray p-4 relative">
             <div>
-              <Schedule
-                isOwner={true}
-                scheduleData={scheduleData}
-                addLocation={toggleSearch}
-              />
+              <Schedule isOwner={true} toggleSearch={toggleSearch} />
+              {isSearchOpen && selectedDayIndex !== null && (
+                <Search
+                  dayIndex={selectedDayIndex} // 선택된 날짜 전달
+                  addLocation={addLocation} // 장소 추가
+                />
+              )}
             </div>
 
             {/* 검색 세션 */}
             {!isSearchOpen && (
               <button
-                onClick={toggleSearch}
+                onClick={toggleSearchHandler}
                 className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10  rounded-2xl border border-lightgray flex justify-center items-center"
                 style={{ width: "40px", height: "40px", fontSize: "20px" }}
               >
@@ -76,11 +78,14 @@ const SchedulePage: React.FC = () => {
               isSearchOpen ? "w-1/3" : "w-0 overflow:hidden"
             }`}
           >
-            {isSearchOpen && (
+            {isSearchOpen && selectedDayIndex !== null && (
               <>
-                <Search /> {/* Search 컴포넌트를 렌더링 */}
+                <Search
+                  dayIndex={selectedDayIndex} // 선택된 날짜 인덱스 전달
+                  addLocation={addLocation} // 장소 추가 함수 전달
+                />
                 <button
-                  onClick={toggleSearch}
+                  onClick={toggleSearchHandler}
                   className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10 rounded-2xl border border-lightgray flex justify-center items-center"
                   style={{ width: "40px", height: "40px", fontSize: "21px" }}
                 >
