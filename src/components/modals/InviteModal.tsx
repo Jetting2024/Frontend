@@ -6,9 +6,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import { IoCloseCircleOutline } from "react-icons/io5";
-import {
-  generateInvitation,
-} from "../../invitation/InvitationService";
+import { generateInvitation } from "../../invitation/InvitationService";
 
 const InviteModal: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +18,11 @@ const InviteModal: React.FC = () => {
   const member = "유지원, 조윤주";
   const date = location.state?.fullDate;
   const name = location.state?.roomName;
+
+  // const fullDate = location.state?.fullDate;
+  // const roomName = location.state?.roomName;
+  // const startDate = location.state?.startDate;
+  // const endDate = location.state?.endDate;
   const startDate = "2025-01-01";
   const endDate = "2025-02-21";
 
@@ -27,7 +30,6 @@ const InviteModal: React.FC = () => {
 
   const [travelId, setTravelId] = useState<number>(5);
   const [invitationLink, setInvitationLink] = useState<string>("");
-
 
   const handleGenerateInvitation = async () => {
     try {
@@ -71,11 +73,18 @@ const InviteModal: React.FC = () => {
 
       const roomId = response.data.result;
       console.log("created chat room ID: ", roomId);
-      console.log('response : ', response);
+      console.log("response : ", response);
 
-      setChatRoomInfo({ roomId, userId, member : member, roomName : name, startDate, endDate });
+      setChatRoomInfo({
+        roomId,
+        userId,
+        member: member,
+        roomName: name,
+        startDate,
+        endDate,
+      });
       console.log(chatRoomState);
-      
+
       // if (response.data.success) {
       //   try {
       //     const roomInfo = await axios.get(
@@ -87,11 +96,11 @@ const InviteModal: React.FC = () => {
       //       }
       //     );
       //     console.log('roomInfo: ', roomInfo);
-          
+
       //     const userId = readAuthState.id;
       //     const member = roomInfo.data.result.member;
       //     const roomName = roomInfo.data.result.roomName;
-          
+
       //     setChatRoomInfo({ roomId, userId, member : member, roomName : name, startDate, endDate });
       //     console.log(chatRoomState);
 
@@ -99,8 +108,10 @@ const InviteModal: React.FC = () => {
       //     console.log('error: ', error)
       //   }
       // }
-      
-      navigate('/schedule', { state: { travelId, invitationLink, member, startDate, endDate }});
+
+      navigate("/schedule", {
+        state: { travelId, invitationLink, member, startDate, endDate },
+      });
     } catch (err) {
       console.log(err);
     }
@@ -108,17 +119,19 @@ const InviteModal: React.FC = () => {
 
   const createTravel = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/travel', 
-      {
-        travelName: name,
-        startDate: startDate,
-        endDate: endDate,
-      }, 
-      {
-        headers: {
-          Authorization: `Bearer ${readAuthState.accessToken}`,
+      const response = await axios.post(
+        "http://localhost:8080/travel",
+        {
+          travelName: name,
+          startDate: startDate,
+          endDate: endDate,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${readAuthState.accessToken}`,
+          },
         }
-      });
+      );
       console.log(response);
       return true;
     } catch (error) {
@@ -159,19 +172,18 @@ const InviteModal: React.FC = () => {
 
         {/* 링크 부분 */}
         <div className="flex gap-6">
-          <div
-            className="h-12 flex items-center px-4 gap-2 rounded-full shadow-sm text-[0.8rem] text-gray border border-[#b7b7b7] bg-white hover:bg-lightgray">
+          <div className="h-12 flex items-center px-4 gap-2 rounded-full shadow-sm text-[0.8rem] text-gray border border-[#b7b7b7] bg-white hover:bg-lightgray">
             <FaLink fill="#b7b7b7" className="w-4 h-4" />
             <span className="text-black text-opacity-50">{invitationLink}</span>
             <button onClick={handleCopyLink}>복사</button>
           </div>
         </div>
-          <button 
+        <button
           className=" w-28 h-12 mt-6 bg-black text-white rounded-lg hover:bg-gray"
           onClick={goSchedule}
-          >
-            초대 완료
-          </button>
+        >
+          초대 완료
+        </button>
       </div>
     </div>
   );

@@ -7,13 +7,15 @@ const MakeRoomModal: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fullDate = location.state?.fullDate;
+  const startDate = location.state?.startDate;
+  const endDate = location.state?.endDate;
 
   const handleComplete = () => {
     if (!roomName.trim()) {
       alert("채팅방 이름을 입력해주세요.");
       return;
     }
-    navigate("/invite", { state: { fullDate, roomName } });
+    navigate("/invite", { state: { fullDate, roomName, startDate, endDate } });
   };
 
   return (

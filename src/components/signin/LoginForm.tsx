@@ -43,23 +43,24 @@ const LoginForm: React.FC = () => {
       sessionStorage.setItem("accessToken", accessToken);
       sessionStorage.setItem("refreshToken", refreshToken);
 
-      
       const memberInfo = await axios.get(
         `http://localhost:8080/member/getInfo`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-      
+
       const userName = memberInfo.data.result.name;
       const image = memberInfo.data.result.image;
-      
+
       sessionStorage.setItem("name", userName);
       sessionStorage.setItem("image", image);
-      
+
       setAuth({ isAuthenticated: true, id, accessToken, refreshToken, image });
 
       navigate("/");
+      alert("로그인에 성공하였습니다!");
+      console.log("토큰:", accessToken);
     } catch (error: any) {
       const errorCode = error?.response?.data?.errorCode;
 
