@@ -4,6 +4,7 @@ import { useRecoilValue } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
 import { Client } from "@stomp/stompjs";
 import connectWebSocket from "../../socket/connectWebSocket";
+import { chatRoomState } from "../../global/recoil/atoms";
 
 interface InviteResponseModalProps {
   travelId: number | undefined;
@@ -18,11 +19,11 @@ interface InviteStatusDto {
 }
 
 const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
-  travelId,
   inviteeId,
   onClose,
 }) => {
   const readAuthState = useRecoilValue(authState);
+  const readRoomState = useRecoilValue(chatRoomState);
   const invitedPerson = "지원이";
 
   const clientRef = useRef<Client | null>(null);
@@ -31,7 +32,7 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
 
   useEffect(() => {
     const client = connectWebSocket((stompClient) => {
-      stompClient.subscribe("/alert/5", (message) => {
+      stompClient.subscribe(`/alert/${readRoomState.travelId}`, (message) => {
         const result = JSON.parse(message.body) as InviteStatusDto;
         setStatus((prev) => [...prev, result]);
       });
@@ -56,7 +57,7 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
       clientRef.current.publish({
         destination: "/pub/inviteResponse",
         body: JSON.stringify({
-          travelId: 5,
+          travelId: readRoomState.travelId,
           inviteeId: 2,
           status: status,
         }),

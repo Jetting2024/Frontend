@@ -11,7 +11,7 @@ interface InviteClickDto {
 
 const PendingAccessModal: React.FC = () => {
   const navigate = useNavigate();
-  const { invitationId } = useParams<{ invitationId: string }>(); // URL에서 invitationId 추출
+  const { invitationId, travelId } = useParams<{ invitationId: string, travelId: string }>();
   const [isVisible, setIsVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [responseMessage, setResponseMessage] = useState<string>("");
@@ -19,11 +19,12 @@ const PendingAccessModal: React.FC = () => {
   const [invitations, setInvitations] = useState<InviteClickDto[]>([]);
 
   useEffect(() => {
-    if (!invitationId) {
-      console.error("Invitation ID is missing from the URL.");
+    if (!invitationId || !travelId) {
+      console.error("Invitation ID or travel ID is missing from the URL.");
       setResponseMessage("초대 ID를 확인할 수 없습니다.");
       setLoading(false);
       return;
+
     }
 
     const client = new Client({
@@ -31,24 +32,24 @@ const PendingAccessModal: React.FC = () => {
       onConnect: () => {
         console.log("Connected to WebSocket for PendingAccessModal");
 
-        client.subscribe(`/sub/alert/5`, (message) => {
+        client.subscribe(`/sub/alert/${travelId}`, (message) => {
           const invite = JSON.parse(message.body) as InviteClickDto;
           setInvitations((prev) => [...prev, invite]);
           console.log("invite: ", invite);
         });
+
 
         console.log("Notification sent to host. 1");
         
         client.publish({
           destination: `/pub/inviteClick`,
           body: JSON.stringify({
-            travelId: 5, // 여행 ID
+            travelId: travelId, // 여행 ID
             inviteeId: 2, // 초대받은 사람 ID
             invitation: invitationId,
           }),
-        });
 
-        // navigate("/loading");
+        });
       },
       onStompError: (frame) => {
         console.error("STOMP error in PendingAccessModal:", frame);

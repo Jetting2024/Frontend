@@ -72,12 +72,12 @@ const DayPicker: React.FC<DayPickerProps> = ({
     }
 
     // 년도와 날짜 포맷
-    const year = selectedYear ? `${selectedYear}년` : "";
+    const year = selectedYear ? `${selectedYear}` : "";
     const start = startDate
-      ? `${startDate.getMonth() + 1}월 ${startDate.getDate()}일`
+      ? `${year}-${startDate.getMonth() + 1}-${startDate.getDate()}`
       : "";
     const end = endDate
-      ? `${endDate.getMonth() + 1}월 ${endDate.getDate()}일`
+      ? `${year}-${endDate.getMonth() + 1}-${endDate.getDate()}`
       : "";
 
     // 숙박 일수 계산
@@ -89,7 +89,8 @@ const DayPicker: React.FC<DayPickerProps> = ({
         : 0;
 
     const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
-    navigator("/make-room", { state: { fullDate } });
+
+    navigator("/make-room", { state: { start, end, nights } });
   };
 
   return (
