@@ -4,6 +4,9 @@ import AlertModal from "../components/AlertModal";
 import TimePicker from "../components/timeSetModal/TimePicker";
 import DirectInputButton from "../components/DirectInputButton";
 import { useLocation } from "react-router-dom";
+import ReactDOM from "react-dom";
+import Search from "../components/NaverMap/Search";
+import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -20,8 +23,8 @@ interface ScheduleItem {
 
 const Schedule: React.FC<{
   isOwner: boolean;
-  toggleSearch: (dayIndex: number) => void;
-}> = ({ isOwner, toggleSearch }) => {
+  // toggleSearch: (dayIndex: number) => void;
+}> = ({ isOwner }) => {
   const location = useLocation();
   const { roomName, startDate, endDate } = location.state || {};
 
@@ -37,9 +40,19 @@ const Schedule: React.FC<{
   const [editValue, setEditValue] = useState("");
 
   const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]); // 날짜별 일정 데이터
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
-  const handleAddLocation = (dayIndex: number) => {
-    toggleSearch(dayIndex); // 날짜 인덱스를 상위로 전달
+  // const handleAddLocation = (dayIndex: number) => {
+  //   toggleSearch(dayIndex); // 검색 세션 열기
+  //   setSelectedDayIndex(dayIndex); // 선택한 날짜 저장
+  // };
+
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // 🔥 검색 세션 열기/닫기 함수
+  const toggleSearch = (dayIndex: number) => {
+    setIsSearchOpen(!isSearchOpen);
+    setSelectedDayIndex(dayIndex);
   };
 
   const [page, setPage] = useState(1);
@@ -82,25 +95,6 @@ const Schedule: React.FC<{
       [id]: { startTime, endTime },
     }));
   };
-
-  // const loadMoreItems = useCallback(() => {
-  //   const allItems = Object.values(scheduleData).flat(); // 객체의 값을 배열로 변환 후 평탄화
-  //   const nextItems = allItems.slice(page * 10, (page + 1) * 10);
-
-  //   if (nextItems.length > 0) {
-  //     const newScheduleData = [...allItems, ...nextItems];
-  //     const groupedData = newScheduleData.reduce<{
-  //       [dayIndex: number]: ScheduleItem[];
-  //     }>((acc, item) => {
-  //       const dayIndex = Math.floor((item.id - 1) / 10); // 그룹화 기준
-  //       acc[dayIndex] = acc[dayIndex] ? [...acc[dayIndex], item] : [item];
-  //       return acc;
-  //     }, {});
-
-  //     setScheduleData(groupedData);
-  //     setPage((prev) => prev + 1);
-  //   }
-  // }, [page, scheduleData]);
 
   const loadMoreItems = useCallback(() => {
     const allItems = scheduleData.flat(); // 평탄화된 배열 가져오기
@@ -187,10 +181,6 @@ const Schedule: React.FC<{
   }, [startDate, endDate, roomName]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
-    // const newId =
-    //   Object.values(scheduleData)
-    //     .flat()
-    //     .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
     const newId =
       scheduleData.flat().reduce((maxId, item) => Math.max(maxId, item.id), 0) +
       1;
@@ -208,140 +198,191 @@ const Schedule: React.FC<{
     }));
   };
 
+  const addLocation = (dayIndex: number, title: string, location: string) => {
+    setScheduleData((prev) => {
+      const updatedSchedule = [...prev];
+      if (!updatedSchedule[dayIndex]) {
+        updatedSchedule[dayIndex] = [];
+      }
+      updatedSchedule[dayIndex].push({
+        id: Date.now(),
+        title,
+        time: "",
+        location,
+      });
+      return updatedSchedule;
+    });
+  };
+
   return (
-    <div className="container mx-auto p-4 h-screen overflow-y-auto">
-      <div className="bg-white rounded-2xl p-8 relative">
-        {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
-        {isOwner && !isEditMode && (
-          <button
-            onClick={toggleEditMode}
-            className="absolute text-gray top-4 right-4 hover:text-black hover:underline"
-          >
-            편집하기
-          </button>
-        )}
-        {isOwner && isEditMode && (
-          <div className="absolute top-4 right-4 flex gap-2">
+    <div className="flex h-screen">
+      <div className="w-200px h-screen border border-lightgray p-4 relative">
+        <div className="bg-white rounded-2xl p-8 relative">
+          {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
+          {isOwner && !isEditMode && (
             <button
-              onClick={() => openEditModal("peoples")}
-              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+              onClick={toggleEditMode}
+              className="absolute text-gray top-4 right-4 hover:text-black hover:underline"
             >
-              멤버 수정
+              편집하기
             </button>
+          )}
+          {isOwner && isEditMode && (
+            <div className="absolute top-4 right-4 flex gap-2">
+              <button
+                onClick={() => openEditModal("peoples")}
+                className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+              >
+                멤버 수정
+              </button>
 
-            <button
-              onClick={() => openEditModal("title")}
-              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
-            >
-              제목 수정
-            </button>
+              <button
+                onClick={() => openEditModal("title")}
+                className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+              >
+                제목 수정
+              </button>
 
-            <button
-              onClick={() => openEditModal("dates")}
-              className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
-            >
-              날짜 수정
-            </button>
+              <button
+                onClick={() => openEditModal("dates")}
+                className="px-4 py-1 bg-lightgray text-gray rounded-lg hover:text-black"
+              >
+                날짜 수정
+              </button>
+            </div>
+          )}
+
+          {/* 수정 모달 */}
+          <AlertModal
+            isOpen={isEditModalOpen}
+            title={`${
+              modalType === "peoples"
+                ? "멤버 수정"
+                : modalType === "title"
+                  ? "제목 수정"
+                  : "날짜 수정"
+            }`}
+            message={
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            }
+            confirmText="수정"
+            onConfirm={handleConfirmEdit}
+            onClose={() => setIsEditModalOpen(false)}
+          />
+          {/* 여행 정보 */}
+          <div className="mb-4 mt-8 text-center">
+            <p>{participants.join(", ")}의</p>
+            <h2 className="text-2xl font-bold">{tripTitle}</h2>
+            <p className="text-gray text-sm mt-2">{tripDates}</p>
           </div>
-        )}
 
-        {/* 수정 모달 */}
-        <AlertModal
-          isOpen={isEditModalOpen}
-          title={`${
-            modalType === "peoples"
-              ? "멤버 수정"
-              : modalType === "title"
-                ? "제목 수정"
-                : "날짜 수정"
-          }`}
-          message={
-            <input
-              type="text"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
-            />
-          }
-          confirmText="수정"
-          onConfirm={handleConfirmEdit}
-          onClose={() => setIsEditModalOpen(false)}
-        />
-        {/* 여행 정보 */}
-        <div className="mb-4 mt-8 text-center">
-          <p>{participants.join(", ")}의</p>
-          <h2 className="text-2xl font-bold">{tripTitle}</h2>
-          <p className="text-gray text-sm mt-2">{tripDates}</p>
-        </div>
+          <div className="divide-y divide-gray mt-4">
+            {dayLabels.map((dayLabel, index) => (
+              <div key={index} className="py-8">
+                <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
+                <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
+                  <h3 className="text-[24px] font-semibold ">
+                    {index + 1} day
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-4">
+                  {/* 각 날짜에 해당하는 세부 일정 표시 */}
+                  {/* <div></div> */}
+                  {(scheduleData[index] || []).map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 mt-4 border border-blue rounded-2xl px-6 py-4"
+                    >
+                      {/* 썸네일 */}
+                      <div className="flex flex-col gap-1 w-full">
+                        {/* 가게 이름, 시간 */}
+                        <div className="flex items-center justify-between">
+                          <p className="text-[18px] font-bold">{item.title}</p>
+                          {isOwner && (
+                            <button
+                              onClick={() => toggleTimePicker(item.id)}
+                              className="text-sm text-gray  hover:text-black"
+                            >
+                              {finalTimeData[item.id]
+                                ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
+                                : "시간 선택"}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray">{item.location}</p>
 
-        <div className="divide-y divide-gray mt-4">
-          {dayLabels.map((dayLabel, index) => (
-            <div key={index} className="py-8">
-              <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
-              <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
-                <h3 className="text-[24px] font-semibold ">{index + 1} day</h3>
-              </div>
-              <div className="flex flex-col gap-4">
-                {/* 각 날짜에 해당하는 세부 일정 표시 */}
-                <div></div>
-                {(scheduleData[index] || []).map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 mt-4 border border-blue rounded-2xl px-6 py-4"
-                  >
-                    {/* 썸네일 */}
-                    <div className="flex flex-col gap-1 w-full">
-                      {/* 가게 이름, 시간 */}
-                      <div className="flex items-center justify-between">
-                        <p className="text-[18px] font-bold">{item.title}</p>
-                        {isOwner && (
-                          <button
-                            onClick={() => toggleTimePicker(item.id)}
-                            className="text-sm text-gray  hover:text-black"
-                          >
-                            {finalTimeData[item.id]
-                              ? `${finalTimeData[item.id].startTime} ~ ${finalTimeData[item.id].endTime}`
-                              : "시간 선택"}
-                          </button>
+                        {/* TimePicker (시간 선택 팝업) */}
+                        {timePickerVisible[item.id] && (
+                          <div className="flex items-center justify-center mt-4">
+                            <div>
+                              <TimePicker
+                                onChange={(startTime, endTime) =>
+                                  handleTimeChange(item.id, startTime, endTime)
+                                }
+                              />
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <p className="text-sm text-gray">{item.location}</p>
-
-                      {/* TimePicker (시간 선택 팝업) */}
-                      {timePickerVisible[item.id] && (
-                        <div className="flex items-center justify-center mt-4">
-                          <div>
-                            <TimePicker
-                              onChange={(startTime, endTime) =>
-                                handleTimeChange(item.id, startTime, endTime)
-                              }
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
-                {isOwner && (
-                  <div className="flex mt-6 gap-2 text-center">
-                    <button
-                      onClick={() => handleAddLocation(index)}
-                      className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
-                    >
-                      장소 추가
-                    </button>
-                    <DirectInputButton
-                      onConfirm={(title, location) =>
-                        addNewItem(index, title, location)
-                      }
-                    />
-                  </div>
-                )}
+                  ))}
+                  {isOwner && (
+                    <div className="flex mt-6 gap-2 text-center">
+                      <button
+                        onClick={() => toggleSearch(index)}
+                        className="w-1/2 py-1 rounded-lg text-sm border border-gray hover:bg-black hover:text-white"
+                      >
+                        장소 추가
+                      </button>
+
+                      <DirectInputButton
+                        onConfirm={(title, location) =>
+                          addNewItem(index, title, location)
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-          <div ref={lastItemRef} className="h-1" />
+            ))}
+            <div ref={lastItemRef} className="h-1" />
+          </div>
         </div>
+        {/* 🔥 검색 세션 열기 버튼 */}
+        {!isSearchOpen && (
+          <button
+            onClick={() => toggleSearch(0)}
+            className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10 rounded-2xl border border-lightgray flex justify-center items-center"
+            style={{ width: "40px", height: "40px", fontSize: "20px" }}
+          >
+            <FaChevronRight />
+          </button>
+        )}
+      </div>
+
+      {/* 🔥 검색 세션 (오른쪽) */}
+      <div
+        className={`p-4 relative transition-all duration-300 ease-in-out ${
+          isSearchOpen ? "w-full" : "w-0 overflow-hidden"
+        }`}
+      >
+        {isSearchOpen && selectedDayIndex !== null && (
+          <>
+            <Search dayIndex={selectedDayIndex} addLocation={addNewItem} />
+            <button
+              onClick={() => toggleSearch(selectedDayIndex)}
+              className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10 rounded-2xl border border-lightgray flex justify-center items-center"
+              style={{ width: "40px", height: "40px", fontSize: "21px" }}
+            >
+              <FaChevronLeft />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

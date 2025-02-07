@@ -49,19 +49,19 @@ const SchedulePage: React.FC = () => {
       <div className="flex flex-col h-screen">
         <div className="flex flex-1">
           {/* 일정 짜기 세션 */}
-          <div className="w-1/3 h-screen border border-lightgray p-4 relative">
+          <div className="w-1/2 h-screen border border-lightgray p-4 relative">
             <div>
-              <Schedule isOwner={true} toggleSearch={toggleSearch} />
-              {isSearchOpen && selectedDayIndex !== null && (
+              <Schedule isOwner={true} />
+              {/* {isSearchOpen && selectedDayIndex !== null && (
                 <Search
                   dayIndex={selectedDayIndex} // 선택된 날짜 전달
                   addLocation={addLocation} // 장소 추가
                 />
-              )}
+              )} */}
             </div>
 
             {/* 검색 세션 */}
-            {!isSearchOpen && (
+            {/* {!isSearchOpen && <div id="search-session" /> && (
               <button
                 onClick={toggleSearchHandler}
                 className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10  rounded-2xl border border-lightgray flex justify-center items-center"
@@ -70,10 +70,10 @@ const SchedulePage: React.FC = () => {
                 <FaChevronRight />
               </button>
             )}
-          </div>
+          </div> */}
 
-          {/* 검색 세션 (열고 닫기 가능, 슬라이드 애니메이션 추가) */}
-          <div
+            {/* 검색 세션 (열고 닫기 가능, 슬라이드 애니메이션 추가) */}
+            {/* <div
             className={`p-4 relative transition-all duration-300 ease-in-out ${
               isSearchOpen ? "w-1/3" : "w-0 overflow:hidden"
             }`}
@@ -93,19 +93,19 @@ const SchedulePage: React.FC = () => {
                 </button>
               </>
             )}
-          </div>
+          </div> */}
 
-          {/* 지도 영역 */}
-          <div className="flex-1">
-            <div className="w-full h-full">
-              <NaverMap />
+            {/* 지도 영역 */}
+            <div className="flex-1">
+              <div className="w-full h-full">
+                <NaverMap />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      {/* 채팅 세션 */}
-      <ChatWindow />
-      {/* <div className="flex-1 relative">
+        {/* 채팅 세션 */}
+        <ChatWindow />
+        {/* <div className="flex-1 relative">
         <div className="w-1/3"></div>
         <div
           className={`${
@@ -125,6 +125,7 @@ const SchedulePage: React.FC = () => {
           )}
         </div>
       </div> */}
+      </div>
     </RecoilRoot>
   );
 };
