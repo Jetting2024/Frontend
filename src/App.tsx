@@ -17,6 +17,7 @@ import MakeChatPage from "./pages/MakeChatPage";
 import LoadingPage from "./pages/LoadingPage";
 import PendingAccessModal from "./components/modals/PendingAccessModal";
 import SelectDatePage from "./pages/SelectDatePage";
+import DayPickerPage from "./pages/DayPickerPage";
 const App: React.FC = () => {
   return (
     <RecoilRoot>

@@ -19,12 +19,12 @@ const InviteModal: React.FC = () => {
   const date = location.state?.fullDate;
   const name = location.state?.roomName;
 
-  // const fullDate = location.state?.fullDate;
-  // const roomName = location.state?.roomName;
-  // const startDate = location.state?.startDate;
-  // const endDate = location.state?.endDate;
-  const startDate = "2025-01-01";
-  const endDate = "2025-02-21";
+  const fullDate = location.state?.fullDate;
+  const roomName = location.state?.roomName;
+  const startDate = location.state?.startDate;
+  const endDate = location.state?.endDate;
+  // const startDate = "2025-01-01";
+  // const endDate = "2025-02-21";
 
   const readAuthState = useRecoilValue(authState);
 
@@ -110,10 +110,30 @@ const InviteModal: React.FC = () => {
       // }
 
       navigate("/schedule", {
-        state: { travelId, invitationLink, member, startDate, endDate },
+        state: {
+          travelId,
+          invitationLink,
+          member,
+          startDate,
+          endDate,
+          roomName,
+          fullDate,
+        },
       });
     } catch (err) {
       console.log(err);
+      //오류 시에도 스케줄 페이지 이동(임시방편...)
+      navigate("/schedule", {
+        state: {
+          travelId,
+          invitationLink,
+          member,
+          startDate,
+          endDate,
+          fullDate,
+          roomName,
+        },
+      });
     }
   };
 
