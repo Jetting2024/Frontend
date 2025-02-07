@@ -216,7 +216,7 @@ const Schedule: React.FC<{
 
   return (
     <div className="flex h-screen">
-      <div className="w-200px h-screen border border-lightgray p-4 relative">
+      <div className="w-1/2 h-screen border border-lightgray p-4 relative">
         <div className="bg-white rounded-2xl p-8 relative">
           {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
           {isOwner && !isEditMode && (
@@ -368,7 +368,7 @@ const Schedule: React.FC<{
       {/* 🔥 검색 세션 (오른쪽) */}
       <div
         className={`p-4 relative transition-all duration-300 ease-in-out ${
-          isSearchOpen ? "w-full" : "w-0 overflow-hidden"
+          isSearchOpen ? "w-1/2" : "w-0 overflow-hidden"
         }`}
       >
         {isSearchOpen && selectedDayIndex !== null && (
