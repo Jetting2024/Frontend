@@ -217,8 +217,8 @@ const Schedule: React.FC<{
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/2 h-screen border border-lightgray p-4 relative overflow-y-auto">
-        <div className="bg-white rounded-2xl p-8 relative">
+      <div className="w-1/2 h-screen relative overflow-y-auto">
+        <div className="bg-white border border-lightgray p-8 relative">
           {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
           {isOwner && !isEditMode && (
             <button
@@ -293,7 +293,6 @@ const Schedule: React.FC<{
                 </div>
                 <div className="flex flex-col gap-4">
                   {/* 각 날짜에 해당하는 세부 일정 표시 */}
-                  {/* <div></div> */}
                   {(scheduleData[index] || []).map((item) => (
                     <div
                       key={item.id}
@@ -354,21 +353,11 @@ const Schedule: React.FC<{
             <div ref={lastItemRef} className="h-1" />
           </div>
         </div>
-        {/* 🔥 검색 세션 열기 버튼 */}
-        {!isSearchOpen && (
-          <button
-            onClick={() => toggleSearch(0)}
-            className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10 rounded-2xl border border-lightgray flex justify-center items-center"
-            style={{ width: "40px", height: "40px", fontSize: "20px" }}
-          >
-            <FaChevronRight />
-          </button>
-        )}
       </div>
 
-      {/* 🔥 검색 세션 (오른쪽) */}
+      {/* 검색 세션 (오른쪽) */}
       <div
-        className={`p-4 relative transition-all duration-300 ease-in-out ${
+        className={`bg-white p-4 relative transition-all duration-300 ease-in-out ${
           isSearchOpen ? "w-1/2" : "w-0 overflow-hidden"
         }`}
       >
