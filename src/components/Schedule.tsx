@@ -39,13 +39,9 @@ const Schedule: React.FC<{
   const [modalType, setModalType] = useState("");
   const [editValue, setEditValue] = useState("");
 
-  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]); // 날짜별 일정 데이터
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]);
 
-  // const handleAddLocation = (dayIndex: number) => {
-  //   toggleSearch(dayIndex); // 검색 세션 열기
-  //   setSelectedDayIndex(dayIndex); // 선택한 날짜 저장
-  // };
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -97,23 +93,22 @@ const Schedule: React.FC<{
   };
 
   const loadMoreItems = useCallback(() => {
-    const allItems = scheduleData.flat(); // 평탄화된 배열 가져오기
-    const nextItems = allItems.slice(page * 10, (page + 1) * 10); // 다음 항목 가져오기
+    const allItems = Array.isArray(scheduleData) ? scheduleData.flat() : []; // ✅ 안전한 flat() 적용
+    const nextItems = allItems.slice(page * 10, (page + 1) * 10);
 
     if (nextItems.length > 0) {
-      const newScheduleData = [...allItems, ...nextItems]; // 기존 + 추가된 항목
+      const newScheduleData = [...allItems, ...nextItems];
 
-      // 배열을 날짜별로 그룹화하여 ScheduleItem[][] 형식으로 변환
       const groupedData: ScheduleItem[][] = [];
       newScheduleData.forEach((item) => {
-        const dayIndex = Math.floor((item.id - 1) / 10); // 날짜 그룹화 기준
+        const dayIndex = Math.floor((item.id - 1) / 10);
         if (!groupedData[dayIndex]) {
           groupedData[dayIndex] = [];
         }
         groupedData[dayIndex].push(item);
       });
 
-      setScheduleData(groupedData); // ScheduleItem[][]로 상태 업데이트
+      setScheduleData(groupedData);
       setPage((prev) => prev + 1);
     }
   }, [page, scheduleData]);
@@ -181,9 +176,10 @@ const Schedule: React.FC<{
   }, [startDate, endDate, roomName]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
+    const allItems = Array.isArray(scheduleData) ? scheduleData.flat() : [];
+
     const newId =
-      scheduleData.flat().reduce((maxId, item) => Math.max(maxId, item.id), 0) +
-      1;
+      allItems.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
 
     const newItem: ScheduleItem = {
       id: newId,
@@ -192,10 +188,14 @@ const Schedule: React.FC<{
       location,
     };
 
-    setScheduleData((prev) => ({
-      ...prev,
-      [dayIndex]: [...(prev[dayIndex] || []), newItem], // 해당 날짜 배열에 추가
-    }));
+    setScheduleData((prev) => {
+      const updatedSchedule = Array.isArray(prev) ? [...prev] : [[]]; // ✅ 항상 2차원 배열 유지
+      if (!updatedSchedule[dayIndex]) {
+        updatedSchedule[dayIndex] = [];
+      }
+      updatedSchedule[dayIndex].push(newItem);
+      return updatedSchedule;
+    });
   };
 
   const addLocation = (dayIndex: number, title: string, location: string) => {
@@ -216,8 +216,8 @@ const Schedule: React.FC<{
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/2 h-screen border border-lightgray p-4 relative">
-        <div className="bg-white rounded-2xl p-8 relative">
+      <div className="w-1/2 h-screen relative overflow-y-auto">
+        <div className="bg-white border border-lightgray p-8 relative">
           {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
           {isOwner && !isEditMode && (
             <button
@@ -275,24 +275,21 @@ const Schedule: React.FC<{
             onClose={() => setIsEditModalOpen(false)}
           />
           {/* 여행 정보 */}
-          <div className="mb-4 mt-8 text-center">
+          <div className="mb-4 mt-8 text-center p-4">
             <p>{participants.join(", ")}의</p>
             <h2 className="text-2xl font-bold">{tripTitle}</h2>
             <p className="text-gray text-sm mt-2">{tripDates}</p>
           </div>
 
-          <div className="divide-y divide-gray mt-4">
+          <div className="divide-y divide-gray mt-8 h-screen">
             {dayLabels.map((dayLabel, index) => (
               <div key={index} className="py-8">
                 <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
                 <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
-                  <h3 className="text-[24px] font-semibold ">
-                    {index + 1} day
-                  </h3>
+                  <h3 className="text-[22px] font-semibold">{index + 1} day</h3>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 mt-4">
                   {/* 각 날짜에 해당하는 세부 일정 표시 */}
-                  {/* <div></div> */}
                   {(scheduleData[index] || []).map((item) => (
                     <div
                       key={item.id}
@@ -353,21 +350,11 @@ const Schedule: React.FC<{
             <div ref={lastItemRef} className="h-1" />
           </div>
         </div>
-        {/* 🔥 검색 세션 열기 버튼 */}
-        {!isSearchOpen && (
-          <button
-            onClick={() => toggleSearch(0)}
-            className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-white hover:bg-lightgray p-3 z-10 rounded-2xl border border-lightgray flex justify-center items-center"
-            style={{ width: "40px", height: "40px", fontSize: "20px" }}
-          >
-            <FaChevronRight />
-          </button>
-        )}
       </div>
 
-      {/* 🔥 검색 세션 (오른쪽) */}
+      {/* 검색 세션 (오른쪽) */}
       <div
-        className={`p-4 relative transition-all duration-300 ease-in-out ${
+        className={`bg-white relative transition-all duration-300 ease-in-out ${
           isSearchOpen ? "w-1/2" : "w-0 overflow-hidden"
         }`}
       >

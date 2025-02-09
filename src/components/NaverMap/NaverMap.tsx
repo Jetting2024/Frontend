@@ -4,6 +4,10 @@ import { centerState, markersState } from "../../recoil/mapState";
 
 const NAVER_MAP_CLIENT_ID = "2kvq7ux5qa";
 
+interface NaverMapProps {
+  selectedLocation: { lat: number; lng: number } | null; // 선택된 장소의 좌표
+}
+
 const NaverMap: React.FC = () => {
   const center = useRecoilValue(centerState);
   const markers = useRecoilValue(markersState);
