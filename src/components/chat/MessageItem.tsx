@@ -5,9 +5,11 @@ interface MessageItemProps {
   isMine: boolean; // 내가 보낸 메시지 여부
 }
 
+
 const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
   const [currentTime, setCurrentTime] = useState("");
   const [truncatedMessage, setTruncatedMessage] = useState(""); // 축약된 메시지
+
   const [isTruncated, setIsTruncated] = useState(false); // 메시지가 축약되었는지 여부
 
   useEffect(() => {
@@ -53,12 +55,27 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
 
   return (
     <div
-      className={`flex flex-col mb-2 ${
-        isMine ? "items-end" : "items-start"
-      }`} // 메시지 방향 조정
+      className={`flex flex-col mb-2 ${isMine ? "items-end" : "items-start"}`} // 메시지 방향 조정
     >
       <div className="text-[10px] text-[#3d3d3d] text-opacity-80 min-w-16 mb-1">
         {currentTime}
+      </div>
+      <div className="flex flex-row items-center justify-center gap-2">
+        <div className="w-6 h-6 rounded-full bg-gray-300">
+          {isMine ? (
+            <img
+              src={`${sessionStorage.getItem("image")}` === undefined || null ? "/profile.png" : `${sessionStorage.getItem("image")}`}
+              alt="profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src="/profile.png"
+              alt="profile"
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
       </div>
       <div
         className={`px-4 py-2 m-2 border-[1px] border-[#3d3d3d] border-opacity-10 shadow-sm rounded-3xl max-w-xs relative ${

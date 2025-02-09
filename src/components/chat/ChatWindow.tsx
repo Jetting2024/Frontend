@@ -9,13 +9,14 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import axios from "axios";
-import { webSocketClientState } from "../../global/recoil/webSocketAtom";
-import { initializeWebSocketClient } from "../../global/recoil/webSocketSelector";
+import { Client } from "@stomp/stompjs";
+import InviteModal from "../modals/InviteModal";
 
 interface ChatMessage {
-  roomId: string | null;
-  userId: string | null;
+  roomId: number | null;
+  userId: number | null;
   message: string | null;
+  createAt: string | null;
 }
 
 const ChatWindow: React.FC = () => {
@@ -23,36 +24,38 @@ const ChatWindow: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const readRoomInfo = useRecoilValue(chatRoomState);
+  const [roomState, setRoomState] = useRecoilState(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
 
-  const [client, setClient] = useRecoilState(webSocketClientState);
-  const initializedClient = useRecoilValue(initializeWebSocketClient);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  const roomId = "5"; // Room ID를 고정값으로 설정
+  // WebSocket 객체를 useRef로 관리
+  const clientRef = useRef<Client | null>(null);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
   const handleSendMessage = (newMessage: string) => {
-    if (!roomId) {
+    if (!roomState.roomId) {
       console.error("roomId is null. Cannot send a message.");
       return;
     }
 
+    console.log("새로운 메시지", newMessage);
+    
     const chatMessage: ChatMessage = {
-      roomId: roomId,
+      roomId: roomState.roomId,
       userId: readAuthInfo.id,
       message: newMessage,
+      createAt: new Date().toISOString(),
     };
-
-    if (client?.connected) {
-      client.publish({
+    if (clientRef.current?.connected) {
+      clientRef.current.publish({
         destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
       });
-      console.log("Message sent:", chatMessage);
+      console.log("Message sent:", JSON.stringify(chatMessage));
     } else {
       console.log("WebSocket is not connected.");
     }
@@ -63,42 +66,58 @@ const ChatWindow: React.FC = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (!client) {
+    if (!clientRef.current) {
       console.log("Initializing WebSocket client...");
-      setClient(initializedClient); // WebSocket 클라이언트 초기화
-      return;
+
+      const stompClient = new Client({
+        brokerURL: "ws://localhost:8080/ws",
+        reconnectDelay: 5000,
+      });
+
+      stompClient.activate(); // WebSocket 활성화
+      clientRef.current = stompClient; // WebSocket 객체를 useRef에 저장
     }
 
-    if (!client.connected) {
+    if (!clientRef.current.connected) {
       console.log("Waiting for WebSocket connection...");
       return;
     }
 
-    const subscription = client.subscribe(`/sub/chat/room/${roomId}`, (message) => {
-      try {
-        const receivedMessage = JSON.parse(message.body);
-        console.log("[STOMP] JSON Message received:", receivedMessage);
-        setMessages((prev) => [...prev, receivedMessage]);
-      } catch (error) {
-        console.warn("[STOMP] Non-JSON Message received:", message.body);
-        setMessages((prev) => [
-          ...prev,
-          { roomId: roomId, userId: readAuthInfo.id, message: message.body },
-        ]);
+    const subscription = clientRef.current.subscribe(
+      `/sub/chat/room/${roomState.roomId}`,
+      (message) => {
+        try {
+          const receivedMessage = JSON.parse(message.body);
+          console.log("[STOMP] JSON Message received:", receivedMessage);
+          setMessages((prev) => [...prev, receivedMessage]);
+        } catch (error) {
+          console.warn("[STOMP] Non-JSON Message received:", message.body);
+          setMessages((prev) => [
+            ...prev,
+            {
+              roomId: roomState.roomId,
+              userId: readAuthInfo.id,
+              message: message.body,
+              createAt: new Date().toISOString(),
+            },
+          ]);
+        }
       }
-    });
-
+    );
+    
     return () => {
       subscription.unsubscribe();
-      console.log(`[STOMP] Unsubscribed from /sub/chat/room/${roomId}`);
+      console.log(
+        `[STOMP] Unsubscribed from /sub/chat/room/${roomState.roomId}`
+      );
     };
-  }, [roomId, client, readAuthInfo.id]);
+  }, [roomState.roomId, readAuthInfo.id]);
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/chat/${roomId}/getMessages`,
+          `http://localhost:8080/chat/${roomState.roomId}/getMessages`,
           {
             headers: {
               Authorization: `Bearer ${readAuthInfo.accessToken}`,
@@ -106,13 +125,14 @@ const ChatWindow: React.FC = () => {
           }
         );
 
-        if (response.data && response.data.length > 0) {
-          console.log("Fetched messages:", response.data);
-          setMessages(response.data);
+        if (response.data.result && response.data.result.length > 0) {
+          console.log("Fetched messages:", response.data.result);
+          setMessages(response.data.result);
         } else {
           console.log("No previous messages found.");
           setMessages([]);
         }
+
       } catch (err) {
         console.error("Error fetching messages:", err);
         setMessages([]);
@@ -120,37 +140,95 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [roomId, client, initializedClient, setClient, readAuthInfo.accessToken]);
+  }, [roomState.roomId, readAuthInfo.accessToken]);
+
+  useEffect(() => {
+    const fetchChatInfo = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/chat/info/${roomState.roomId}`, {
+          headers: {
+            Authorization: `Bearer ${readAuthInfo.accessToken}`,
+          },
+        });
+        const updatedMembers = response.data.result.members.map((member: { id: number; email: string; name?: string | null }) => ({
+          ...member,
+          name: member.name ?? "익명 유저"
+        }));
+        const memberNames = updatedMembers.map((member: { name: string; }) => member.name).join(", ");
+        const roomName = response.data.result.roomName;
+        setRoomState({
+          ...roomState,
+          roomName: roomName,
+          member: memberNames,
+        });
+      } catch (err) {
+        console.error("Error fetching chat info:", err);
+      }
+    };
+    fetchChatInfo();
+  }, [roomState.roomId, readAuthInfo.accessToken]);
+
+  const handleInviteModalOpen = () => {
+    setIsInviteModalOpen(true);
+    document.body.style.overflow = "hidden"; // 스크롤 방지
+  };
+
+  const handleInviteModalClose = () => {
+    setIsInviteModalOpen(false);
+    document.body.style.overflow = "auto"; // 스크롤 다시 활성화
+  };
 
   return (
-    <section
-      className={`bg-white fixed z-40 bottom-0 right-0 w-[78rem] max-w-full min-w-[40rem] border-2 border-lightgray rounded-tr-3xl rounded-tl-3xl shadow-md transition-all duration-300 ease-in-out`}
-      style={{
-        height: isChatOpen ? "53rem" : "3rem",
-      }}
-    >
-      <div className="h-12 flex items-center justify-between px-4">
-        <div className="flex-grow flex justify-center">
-          <button
-            onClick={toggleChat}
-            className="flex items-center absolute left-1/2 top-3 transform -translate-x-1/2"
-          >
-            {isChatOpen ? (
-              <FaAngleDown className="text-gray-400" size={24} />
-            ) : (
-              <FaAngleUp className="text-gray-400" size={24} />
-            )}
-          </button>
+    <>
+      {/* ✅ 초대 모달 - ChatWindow 밖에서 fixed로 설정하여 항상 보이도록 수정 */}
+      {isInviteModalOpen && (
+        <div
+          className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={handleInviteModalClose} // 모달 외부 클릭 시 닫기
+        >
+          <div className="bg-white p-6 rounded-lg shadow-lg relative">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={handleInviteModalClose}
+            >
+              ✕
+            </button>
+            <InviteModal />
+          </div>
         </div>
-        {isChatOpen && (
-          <button className="flex items-center gap-2">
-            <div className="mt-1 text-gray">멤버 초대하기</div>
-            <IoPersonAddOutline />
-          </button>
-        )}
-      </div>
+      )}
 
-      {isChatOpen && (
+      {/* ✅ 채팅 창 */}
+      <section
+        className={`bg-white fixed z-40 bottom-0 right-0 w-[78rem] max-w-full min-w-[40rem] border-2 border-lightgray rounded-tr-3xl rounded-tl-3xl shadow-md transition-all duration-300 ease-in-out`}
+        style={{
+          height: isChatOpen ? "53rem" : "3rem",
+        }}
+      >
+        <div className="h-12 flex items-center justify-between px-4">
+          <div className="flex-grow flex justify-center">
+            <button
+              onClick={toggleChat}
+              className="flex items-center absolute left-1/2 top-3 transform -translate-x-1/2"
+            >
+              {isChatOpen ? (
+                <FaAngleDown className="text-gray-400" size={24} />
+              ) : (
+                <FaAngleUp className="text-gray-400" size={24} />
+              )}
+            </button>
+          </div>
+          {isChatOpen && (
+            <button
+              className="flex items-center gap-2"
+              onClick={handleInviteModalOpen}
+            >
+              <div className="mt-1 text-gray">멤버 초대하기</div>
+              <IoPersonAddOutline />
+            </button>
+          )}
+        </div>
+
         <div className="h-[calc(50rem)] flex flex-col">
           <div className="w-full h-[6rem] px-16 py-2 flex justify-center items-center border-b-2 border-lightgray">
             <ChatInfo />
@@ -176,8 +254,8 @@ const ChatWindow: React.FC = () => {
             <MessageInput onSendMessage={handleSendMessage} />
           </div>
         </div>
-      )}
-    </section>
+      </section>
+    </>
   );
 };
 

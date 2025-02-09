@@ -5,6 +5,8 @@ import ChatWindow from "../components/chat/ChatWindow";
 import InviteResponseModal from "../components/modals/InviteResponseModal";
 
 import { Client } from "@stomp/stompjs";
+import { useRecoilValue } from "recoil";
+import { chatRoomState } from "../global/recoil/atoms";
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -14,11 +16,13 @@ const SchedulePage: React.FC = () => {
   const [isInviteModalVisible, setIsInviteModalVisible] = useState(false); // 모달 표시 상태
   const [inviteData, setInviteData] = useState<{
     travelId: number | undefined;
+    inviteeId: number | undefined;
     invitationLink: string | undefined;
     invitedPerson: string | undefined;
   } | null>(null);
 
   const clientRef = useRef<Client | null>(null);
+  const readRoomState = useRecoilValue(chatRoomState);
 
   const toggleChat = () => {
     if (isSearchOpen) {
@@ -47,10 +51,10 @@ const SchedulePage: React.FC = () => {
     const client = new Client({
       brokerURL: "ws://localhost:8080/ws",
       onConnect: () => {
-        console.log("Connected to WebSocket.");
+        console.log("Connected to WebSocket for invite response.");
 
         // 구독 설정
-        client.subscribe(`/sub/alert/5`, (message) => {
+        client.subscribe(`/sub/alert/${readRoomState.travelId}`, (message) => {
           const invite = JSON.parse(message.body);
           console.log("Message received:", invite);
 
@@ -58,9 +62,11 @@ const SchedulePage: React.FC = () => {
           setIsInviteModalVisible(true);
           setInviteData({
             travelId: invite.travelId,
+            inviteeId: invite.inviteeId,
             invitationLink: invite.invitation,
             invitedPerson: "초대받은 사람 이름", // 필요시 수정
           });
+          console.log("inviteData", inviteData);
         });
       },
       onStompError: (frame) => {
@@ -143,10 +149,12 @@ const SchedulePage: React.FC = () => {
         <div className="absolute top-4 right-4 z-50">
           <InviteResponseModal
             travelId={inviteData?.travelId}
-            inviteeId={2}
+            inviteeId={inviteData?.inviteeId}
+            invitedPerson={inviteData?.invitedPerson}
             onClose={closeInviteModal}
           />
         </div>
+
       )}
     </div>
   );

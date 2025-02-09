@@ -1,6 +1,6 @@
 import axios from "axios"
 
-export const generateInvitation = async (travelId: number): Promise<string> => {
+export const generateInvitation = async (travelId: string): Promise<string> => {
     const response = await axios.post(`http://localhost:8080/invite/${travelId}/invitation`);
     console.log(response.data.result);
     return response.data.result;

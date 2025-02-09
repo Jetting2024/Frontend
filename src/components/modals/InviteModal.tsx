@@ -2,41 +2,35 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FaLink } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import { IoCloseCircleOutline } from "react-icons/io5";
-import { generateInvitation } from "../../invitation/InvitationService";
+import {
+  generateInvitation,
+} from "../../invitation/InvitationService";
+import LoadingPage from "../../pages/LoadingPage";
 
 const InviteModal: React.FC = () => {
   const navigate = useNavigate();
-
-  const setChatRoomInfo = useSetRecoilState(chatRoomState);
   const location = useLocation();
-
-  const userId = sessionStorage.getItem("id");
-  const member = "유지원, 조윤주";
-  const date = location.state?.fullDate;
   const name = location.state?.roomName;
-
-  const fullDate = location.state?.fullDate;
-  const roomName = location.state?.roomName;
-  const startDate = location.state?.startDate;
-  const endDate = location.state?.endDate;
-  // const startDate = "2025-01-01";
-  // const endDate = "2025-02-21";
-
   const readAuthState = useRecoilValue(authState);
+  const [roomState, setRoomState] = useRecoilState(chatRoomState);
 
-  const [travelId, setTravelId] = useState<number>(5);
   const [invitationLink, setInvitationLink] = useState<string>("");
+  const [isLinkGenerated, setIsLinkGenerated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // 로딩 상태 추가
 
   const handleGenerateInvitation = async () => {
     try {
-      const link = await generateInvitation(travelId);
+      const link = await generateInvitation(roomState.travelId?.toString() ?? "");
       setInvitationLink(link);
+      setIsLinkGenerated(true);
     } catch (error) {
       console.log("Failed to generate invitation: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,7 +54,7 @@ const InviteModal: React.FC = () => {
       const response = await axios.post(
         "http://localhost:8080/chat/createRoom",
         {
-          travelId: travelId,
+          travelId: roomState.travelId,
           roomName: name,
         },
         {
@@ -70,56 +64,12 @@ const InviteModal: React.FC = () => {
           },
         }
       );
-
       const roomId = response.data.result;
-      console.log("created chat room ID: ", roomId);
-      console.log("response : ", response);
-
-      setChatRoomInfo({
-        roomId,
-        userId,
-        member: member,
-        roomName: name,
-        startDate,
-        endDate,
+      setRoomState({
+        ...roomState,
+        roomId: roomId.toString(),
       });
-      console.log(chatRoomState);
-
-      // if (response.data.success) {
-      //   try {
-      //     const roomInfo = await axios.get(
-      //       `http://localhost:8080/chat/info/5`, // 수정 부분
-      //       {
-      //         headers: {
-      //           Authorization: `Bearer ${readAuthState.accessToken}`,
-      //         },
-      //       }
-      //     );
-      //     console.log('roomInfo: ', roomInfo);
-
-      //     const userId = readAuthState.id;
-      //     const member = roomInfo.data.result.member;
-      //     const roomName = roomInfo.data.result.roomName;
-
-      //     setChatRoomInfo({ roomId, userId, member : member, roomName : name, startDate, endDate });
-      //     console.log(chatRoomState);
-
-      //   } catch (error) {
-      //     console.log('error: ', error)
-      //   }
-      // }
-
-      navigate("/schedule", {
-        state: {
-          travelId,
-          invitationLink,
-          member,
-          startDate,
-          endDate,
-          roomName,
-          fullDate,
-        },
-      });
+      navigate('/schedule');
     } catch (err) {
       console.log(err);
       //오류 시에도 스케줄 페이지 이동(임시방편...)
@@ -135,55 +85,21 @@ const InviteModal: React.FC = () => {
         },
       });
     }
-  };
 
-  const createTravel = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/travel",
-        {
-          travelName: name,
-          startDate: startDate,
-          endDate: endDate,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${readAuthState.accessToken}`,
-          },
-        }
-      );
-      console.log(response);
-      return true;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  };
-
-  const goSchedule = async () => {
-    try {
-      const travelCreated = await createTravel();
-      if (travelCreated) {
-        createRoom();
-      } else {
-        console.log("여행이 제대로 생성되지 않았습니다.");
-      }
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   useEffect(() => {
     handleGenerateInvitation();
   }, []);
 
+  if (isLoading) {
+    return (
+      <LoadingPage />
+    );
+  }
+
   return (
     <div className="p-2 bg-white rounded-lg border border-[#3d3d3d] border-opacity-10 shadow-md flex flex-col items-center">
-      <div className="w-full flex justify-end">
-        <button>
-          <IoCloseCircleOutline size={24} onClick={() => navigate(-1)} />
-        </button>
-      </div>
       <div className="py-10 px-8 flex flex-col items-center">
         <h1 className="text-[1.3rem] font-bold mb-1">누구랑 가시나요?</h1>
         <p className="text-[1.3rem] font-bold mb-10">
@@ -200,10 +116,10 @@ const InviteModal: React.FC = () => {
         </div>
         <button
           className=" w-28 h-12 mt-6 bg-black text-white rounded-lg hover:bg-gray"
-          onClick={goSchedule}
-        >
-          초대 완료
-        </button>
+          onClick={createRoom}
+          >
+            초대 완료
+          </button>
       </div>
     </div>
   );

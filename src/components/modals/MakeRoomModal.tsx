@@ -1,21 +1,57 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IoCloseCircleOutline } from "react-icons/io5";
+import axios from "axios";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
+import { chatRoomState } from "../../global/recoil/atoms";
 
 const MakeRoomModal: React.FC = () => {
   const [roomName, setRoomName] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const fullDate = location.state?.fullDate;
-  const startDate = location.state?.startDate;
-  const endDate = location.state?.endDate;
+  const startDate = location.state?.start;
+  const endDate = location.state?.end;
+  const night = location.state?.night;
+  const readAuthState = useRecoilValue(authState);
+  const [roomState, setRoomState] = useRecoilState(chatRoomState);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!roomName.trim()) {
       alert("채팅방 이름을 입력해주세요.");
       return;
     }
-    navigate("/invite", { state: { fullDate, roomName, startDate, endDate } });
+    
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toISOString().split("T")[0]; // 'YYYY-MM-DD' 형식으로 변환
+    };
+
+    try {
+      const response = await axios.post('http://localhost:8080/travel', {
+        travelName: roomName,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+      }, {
+        headers: {
+          Authorization: `Bearer ${readAuthState.accessToken}`,
+        }
+      });
+      const travelId = response.data.result;
+
+      setRoomState({
+        ...roomState,
+        travelId: travelId,
+        roomName: roomName,
+        userId: readAuthState.id,
+        startDate: startDate,
+        endDate: endDate,
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+    navigate("/loading", { state: { roomName } });
   };
 
   return (

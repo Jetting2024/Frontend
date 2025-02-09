@@ -4,12 +4,15 @@ import { useRecoilValue } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
 import { Client } from "@stomp/stompjs";
 import connectWebSocket from "../../socket/connectWebSocket";
+import { chatRoomState } from "../../global/recoil/atoms";
 
 interface InviteResponseModalProps {
   travelId: number | undefined;
   inviteeId: number | undefined;
+  invitedPerson: string | undefined;
   onClose: () => void;
 }
+
 
 interface InviteStatusDto {
   travelId: number | null;
@@ -18,20 +21,19 @@ interface InviteStatusDto {
 }
 
 const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
-  travelId,
   inviteeId,
+  invitedPerson,
   onClose,
 }) => {
   const readAuthState = useRecoilValue(authState);
-  const invitedPerson = "지원이";
-
+  const readRoomState = useRecoilValue(chatRoomState);
   const clientRef = useRef<Client | null>(null);
-
   const [status, setStatus] = useState<InviteStatusDto[]>([]);
 
   useEffect(() => {
     const client = connectWebSocket((stompClient) => {
-      stompClient.subscribe("/alert/5", (message) => {
+      console.log("readRoomState.travelId", readRoomState.travelId);
+      stompClient.subscribe(`/alert/${readRoomState.travelId}`, (message) => {
         const result = JSON.parse(message.body) as InviteStatusDto;
         setStatus((prev) => [...prev, result]);
       });
@@ -56,12 +58,11 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
       clientRef.current.publish({
         destination: "/pub/inviteResponse",
         body: JSON.stringify({
-          travelId: 5,
-          inviteeId: 2,
+          travelId: readRoomState.travelId,
+          inviteeId: inviteeId,
           status: status,
         }),
       });
-      console.log("보냄");
     } else {
       console.error("WebSocket client is not initialized.");
     }
