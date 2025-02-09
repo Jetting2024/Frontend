@@ -115,12 +115,6 @@ const Search: React.FC<SearchProps> = ({ dayIndex, addLocation }) => {
             }
           }}
         />
-        {/* <button
-          onClick={handleSearch}
-          className="py-2 px-4 rounded hover:bg-lightblue"
-        >
-          검색
-        </button> */}
       </div>
 
       {loading && <p>검색 중입니다...</p>}
@@ -157,7 +151,7 @@ const Search: React.FC<SearchProps> = ({ dayIndex, addLocation }) => {
           ))}
         </ul>
         {results.length === 0 && !loading && !error && (
-          <p>검색 결과가 없습니다.</p>
+          <p className="text-gray">가고 싶은 장소를 검색하세요. ex)망원동</p>
         )}
       </div>
     </div>

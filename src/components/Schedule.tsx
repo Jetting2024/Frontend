@@ -39,9 +39,8 @@ const Schedule: React.FC<{
   const [modalType, setModalType] = useState("");
   const [editValue, setEditValue] = useState("");
 
-  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>(() => [
-    [],
-  ]);
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]);
+
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -276,22 +275,20 @@ const Schedule: React.FC<{
             onClose={() => setIsEditModalOpen(false)}
           />
           {/* 여행 정보 */}
-          <div className="mb-4 mt-8 text-center">
+          <div className="mb-4 mt-8 text-center p-4">
             <p>{participants.join(", ")}의</p>
             <h2 className="text-2xl font-bold">{tripTitle}</h2>
             <p className="text-gray text-sm mt-2">{tripDates}</p>
           </div>
 
-          <div className="divide-y divide-gray mt-4 h-screen">
+          <div className="divide-y divide-gray mt-8 h-screen">
             {dayLabels.map((dayLabel, index) => (
               <div key={index} className="py-8">
                 <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
                 <div className="flex items-center gap-4 bg-lightblue py-1 px-3 rounded-lg">
-                  <h3 className="text-[24px] font-semibold ">
-                    {index + 1} day
-                  </h3>
+                  <h3 className="text-[22px] font-semibold">{index + 1} day</h3>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 mt-4">
                   {/* 각 날짜에 해당하는 세부 일정 표시 */}
                   {(scheduleData[index] || []).map((item) => (
                     <div
@@ -357,7 +354,7 @@ const Schedule: React.FC<{
 
       {/* 검색 세션 (오른쪽) */}
       <div
-        className={`bg-white p-4 relative transition-all duration-300 ease-in-out ${
+        className={`bg-white relative transition-all duration-300 ease-in-out ${
           isSearchOpen ? "w-1/2" : "w-0 overflow-hidden"
         }`}
       >
