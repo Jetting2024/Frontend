@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Client } from "@stomp/stompjs";
-import axios from "axios";
+import connectWebSocket from "../../socket/connectWebSocket";
 
 interface InviteClickDto {
   travelId: number | null;
@@ -17,6 +17,7 @@ const PendingAccessModal: React.FC = () => {
   const [responseMessage, setResponseMessage] = useState<string>("");
   const [minimumLoadingTime, setMinimumLoadingTime] = useState(true);
   const [invitations, setInvitations] = useState<InviteClickDto[]>([]);
+  const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
     if (!invitationId || !travelId) {
@@ -26,70 +27,71 @@ const PendingAccessModal: React.FC = () => {
       return;
     }
 
-    const client = new Client({
-      brokerURL: "ws://localhost:8080/ws",
-      onConnect: () => {
-        console.log("Connected to WebSocket for PendingAccessModal");
+    const client = connectWebSocket((stompClient) => {
+      stompClient.subscribe(`sub/alert/${travelId}`, (message) => {
+        const invite = JSON.parse(message.body) as InviteClickDto;
+        setInvitations((prev) => [...prev, invite]);
+        console.log("invite: ", invite);
+      });
 
-        client.subscribe(`/sub/alert/${travelId}`, (message) => {
-          const invite = JSON.parse(message.body) as InviteClickDto;
-          setInvitations((prev) => [...prev, invite]);
-          console.log("invite: ", invite);
-        });
-        
-        client.publish({
-          destination: `/pub/inviteClick`,
-          body: JSON.stringify({
-            travelId: travelId, // 여행 ID
-            inviteeId: 2, // 초대받은 사람 ID
-            invitation: invitationId,
-          }),
-        });
-      },
-      onStompError: (frame) => {
-        console.error("STOMP error in PendingAccessModal:", frame);
-      },
+      stompClient.publish({
+        destination: `/pub/inviteClick`,
+        body: JSON.stringify({
+          travelId: travelId,
+          inviteeId: 2,
+          invitation: invitationId,
+        }),
+      });
     });
 
-    client.activate();
-
-
-    const checkHostResponse = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/invitation/status/${invitationId}`
-        );
-
-        if (response.data.status === "approved") {
-          setResponseMessage("호스트가 요청을 허용했습니다.");
-          if (!minimumLoadingTime) {
-            setTimeout(() => navigate("/chat-room"), 2000); // 2초 후 채팅방으로 이동
-          }
-        } else if (response.data.status === "rejected") {
-          setResponseMessage("호스트가 요청을 거부했습니다.");
-          setLoading(false); // 로딩 중지
-        }
-      } catch (error) {
-        console.error("Error fetching host response:", error);
-        setResponseMessage("호스트의 응답을 확인할 수 없습니다.");
-        setLoading(false);
-      }
-    };
+    clientRef.current = client;
 
     // 최소 로딩 시간 설정 (1분)
     const minimumLoadingTimer = setTimeout(() => {
       setMinimumLoadingTime(false);
     }, 180000); // 60초
 
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.deactivate();
+        clearTimeout(minimumLoadingTimer);
+      }
+    };
+    
+
+      // const checkHostResponse = async () => {
+      //   try {
+      //     const response = await axios.get(
+      //       `http://localhost:8080/invitation/status/${invitationId}`
+      //     );
+
+      //     if (response.data.status === "approved") {
+      //       setResponseMessage("호스트가 요청을 허용했습니다.");
+      //       if (!minimumLoadingTime) {
+      //         setTimeout(() => navigate("/chat-room"), 2000); // 2초 후 채팅방으로 이동
+      //       }
+      //     } else if (response.data.status === "rejected") {
+      //       setResponseMessage("호스트가 요청을 거부했습니다.");
+      //       setLoading(false); // 로딩 중지
+      //     }
+      //   } catch (error) {
+      //     console.error("Error fetching host response:", error);
+      //     setResponseMessage("호스트의 응답을 확인할 수 없습니다.");
+      //     setLoading(false);
+      //   }
+      // };
+
+    
+
     // const interval = setInterval(async () => {
     //   await checkHostResponse();
     // }, 3000); // 3초마다 상태 확인
 
-    return () => {
-      client.deactivate();
-      // clearInterval(interval);
-      clearTimeout(minimumLoadingTimer);
-    };
+    // return () => {
+    //   client.deactivate();
+    //   // clearInterval(interval);
+    //   clearTimeout(minimumLoadingTimer);
+    // };
   }, [invitationId, minimumLoadingTime, navigate]);
 
   const closeModal = () => {

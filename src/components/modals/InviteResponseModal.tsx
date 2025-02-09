@@ -32,7 +32,6 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
 
   useEffect(() => {
     const client = connectWebSocket((stompClient) => {
-      console.log("readRoomState.travelId", readRoomState.travelId);
       stompClient.subscribe(`/alert/${readRoomState.travelId}`, (message) => {
         const result = JSON.parse(message.body) as InviteStatusDto;
         setStatus((prev) => [...prev, result]);
