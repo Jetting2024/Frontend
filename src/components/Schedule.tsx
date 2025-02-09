@@ -7,6 +7,8 @@ import { useLocation } from "react-router-dom";
 import ReactDOM from "react-dom";
 import Search from "../components/NaverMap/Search";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { chatRoomState } from "../global/recoil/atoms";
+import { useRecoilValue } from "recoil";
 
 interface ScheduleProps {
   isOwner: boolean;
@@ -25,11 +27,12 @@ const Schedule: React.FC<{
   isOwner: boolean;
   // toggleSearch: (dayIndex: number) => void;
 }> = ({ isOwner }) => {
-  const location = useLocation();
-  const { roomName, startDate, endDate } = location.state || {};
+  // const location = useLocation();
+  // const { roomName, startDate, endDate } = location.state || {};
+  const roomState = useRecoilValue(chatRoomState);
 
-  const [participants, setParticipants] = useState<string[]>(["하은", "재혁"]); // 초기값 임시 설정
-  const [tripTitle, setTripTitle] = useState(roomName || "새로운 여행");
+  const [participants, setParticipants] = useState<string[]>(roomState.member === null ? ["하은", "재혁"] : roomState.member); // 초기값 임시 설정
+  const [tripTitle, setTripTitle] = useState(roomState.roomName || "새로운 여행");
   const [tripDates, setTripDates] = useState("");
 
   const [dayLabels, setDayLabels] = useState<string[]>([]); // "n일차"
@@ -41,6 +44,7 @@ const Schedule: React.FC<{
 
   const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]); // 날짜별 일정 데이터
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+
 
   // const handleAddLocation = (dayIndex: number) => {
   //   toggleSearch(dayIndex); // 검색 세션 열기
@@ -163,22 +167,23 @@ const Schedule: React.FC<{
   };
 
   useEffect(() => {
-    if (startDate && endDate) {
-      const parsedStartDate = format(new Date(startDate), "yyyy-MM-dd");
-      const parsedEndDate = format(new Date(endDate), "yyyy-MM-dd");
-      setTripDates(`${parsedStartDate} ~ ${parsedEndDate}`);
+    if (roomState.startDate && roomState.endDate) {
+      setTripDates(`${roomState.startDate} ~ ${roomState.endDate} (${roomState.nightCount || 0}박 ${(parseInt(roomState.nightCount || '0') + 1)}일)`);
 
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+
+      const start = new Date(roomState.startDate);
+      const end = new Date(roomState.endDate);
       const numDays = differenceInDays(end, start) + 1;
       const labels = Array.from({ length: numDays }, (_, i) =>
         format(addDays(start, i), "yyyy-MM-dd")
       );
+
       setDayLabels(labels);
     } else {
       console.error("오류 발생");
     }
-  }, [startDate, endDate, roomName]);
+  }, [roomState.startDate, roomState.endDate, roomState.roomName]);
+
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
     const newId =
@@ -280,6 +285,7 @@ const Schedule: React.FC<{
             <h2 className="text-2xl font-bold">{tripTitle}</h2>
             <p className="text-gray text-sm mt-2">{tripDates}</p>
           </div>
+
 
           <div className="divide-y divide-gray mt-4">
             {dayLabels.map((dayLabel, index) => (

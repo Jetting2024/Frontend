@@ -12,7 +12,7 @@ const MakeRoomModal: React.FC = () => {
   const location = useLocation();
   const startDate = location.state?.start;
   const endDate = location.state?.end;
-  const night = location.state?.night;
+  const nights = location.state?.nights;
   const readAuthState = useRecoilValue(authState);
   const [roomState, setRoomState] = useRecoilState(chatRoomState);
 
@@ -46,13 +46,16 @@ const MakeRoomModal: React.FC = () => {
         userId: readAuthState.id,
         startDate: formatDate(startDate),
         endDate: formatDate(endDate),
+        nightCount: nights,
       });
+
 
     } catch (err) {
       console.error(err);
     }
-    navigate("/loading", { state: { roomName, night } });
+    navigate("/loading", { state: { roomName } });
   };
+
 
 
   return (

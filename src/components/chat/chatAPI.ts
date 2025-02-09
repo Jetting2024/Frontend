@@ -30,7 +30,7 @@ export const fetchChatInfo = async (roomId: number, token: string) => {
 
     return {
       roomName: response.data.result.roomName,
-      members: updatedMembers.map((m: any) => m.name).join(", "),
+      members: updatedMembers.map((m: any) => m.name),
     };
   } catch (err) {
     console.error("Error fetching chat info:", err);
