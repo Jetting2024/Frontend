@@ -5,7 +5,7 @@ import ChatInfo from "./ChatInfo";
 import MessageInput from "./MessageInput";
 import MessageItem from "./MessageItem";
 import TodayDate from "./TodayDate";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
 import axios from "axios";
@@ -13,9 +13,10 @@ import { Client } from "@stomp/stompjs";
 import InviteModal from "../modals/InviteModal";
 
 interface ChatMessage {
-  roomId: string | null;
-  userId: string | null;
+  roomId: number | null;
+  userId: number | null;
   message: string | null;
+  createAt: string | null;
 }
 
 const ChatWindow: React.FC = () => {
@@ -23,7 +24,7 @@ const ChatWindow: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const readRoomInfo = useRecoilValue(chatRoomState);
+  const [roomState, setRoomState] = useRecoilState(chatRoomState);
   const readAuthInfo = useRecoilValue(authState);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -36,23 +37,25 @@ const ChatWindow: React.FC = () => {
   };
 
   const handleSendMessage = (newMessage: string) => {
-    if (!readRoomInfo.roomId) {
+    if (!roomState.roomId) {
       console.error("roomId is null. Cannot send a message.");
       return;
     }
 
+    console.log("새로운 메시지", newMessage);
+    
     const chatMessage: ChatMessage = {
-      roomId: readRoomInfo.roomId,
+      roomId: roomState.roomId,
       userId: readAuthInfo.id,
       message: newMessage,
+      createAt: new Date().toISOString(),
     };
-
     if (clientRef.current?.connected) {
       clientRef.current.publish({
         destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
       });
-      console.log("Message sent:", chatMessage);
+      console.log("Message sent:", JSON.stringify(chatMessage));
     } else {
       console.log("WebSocket is not connected.");
     }
@@ -68,7 +71,6 @@ const ChatWindow: React.FC = () => {
 
       const stompClient = new Client({
         brokerURL: "ws://localhost:8080/ws",
-        debug: (str: string) => console.log(str),
         reconnectDelay: 5000,
       });
 
@@ -82,7 +84,7 @@ const ChatWindow: React.FC = () => {
     }
 
     const subscription = clientRef.current.subscribe(
-      `/sub/chat/room/${readRoomInfo.roomId}`,
+      `/sub/chat/room/${roomState.roomId}`,
       (message) => {
         try {
           const receivedMessage = JSON.parse(message.body);
@@ -93,28 +95,29 @@ const ChatWindow: React.FC = () => {
           setMessages((prev) => [
             ...prev,
             {
-              roomId: readRoomInfo.roomId,
+              roomId: roomState.roomId,
               userId: readAuthInfo.id,
               message: message.body,
+              createAt: new Date().toISOString(),
             },
           ]);
         }
       }
     );
-
+    
     return () => {
       subscription.unsubscribe();
       console.log(
-        `[STOMP] Unsubscribed from /sub/chat/room/${readRoomInfo.roomId}`
+        `[STOMP] Unsubscribed from /sub/chat/room/${roomState.roomId}`
       );
     };
-  }, [readRoomInfo.roomId, readAuthInfo.id]);
+  }, [roomState.roomId, readAuthInfo.id]);
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/chat/${readRoomInfo.roomId}/getMessages`,
+          `http://localhost:8080/chat/${roomState.roomId}/getMessages`,
           {
             headers: {
               Authorization: `Bearer ${readAuthInfo.accessToken}`,
@@ -122,13 +125,14 @@ const ChatWindow: React.FC = () => {
           }
         );
 
-        if (response.data && response.data.length > 0) {
-          console.log("Fetched messages:", response.data);
-          setMessages(response.data);
+        if (response.data.result && response.data.result.length > 0) {
+          console.log("Fetched messages:", response.data.result);
+          setMessages(response.data.result);
         } else {
           console.log("No previous messages found.");
           setMessages([]);
         }
+
       } catch (err) {
         console.error("Error fetching messages:", err);
         setMessages([]);
@@ -136,7 +140,33 @@ const ChatWindow: React.FC = () => {
     };
 
     fetchMessages();
-  }, [readRoomInfo.roomId, readAuthInfo.accessToken]);
+  }, [roomState.roomId, readAuthInfo.accessToken]);
+
+  useEffect(() => {
+    const fetchChatInfo = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/chat/info/${roomState.roomId}`, {
+          headers: {
+            Authorization: `Bearer ${readAuthInfo.accessToken}`,
+          },
+        });
+        const updatedMembers = response.data.result.members.map((member: { id: number; email: string; name?: string | null }) => ({
+          ...member,
+          name: member.name ?? "익명 유저"
+        }));
+        const memberNames = updatedMembers.map((member: { name: string; }) => member.name).join(", ");
+        const roomName = response.data.result.roomName;
+        setRoomState({
+          ...roomState,
+          roomName: roomName,
+          member: memberNames,
+        });
+      } catch (err) {
+        console.error("Error fetching chat info:", err);
+      }
+    };
+    fetchChatInfo();
+  }, [roomState.roomId, readAuthInfo.accessToken]);
 
   const handleInviteModalOpen = () => {
     setIsInviteModalOpen(true);

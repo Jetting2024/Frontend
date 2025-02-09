@@ -42,8 +42,8 @@ const MakeRoomModal: React.FC = () => {
       setRoomState({
         ...roomState,
         travelId: travelId,
-        userId: readAuthState.id,
         roomName: roomName,
+        userId: readAuthState.id,
         startDate: startDate,
         endDate: endDate,
       });

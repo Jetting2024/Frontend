@@ -14,8 +14,6 @@ import LoadingPage from "../../pages/LoadingPage";
 const InviteModal: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const member = "유지원, 조윤주";
   const name = location.state?.roomName;
   const readAuthState = useRecoilValue(authState);
   const [roomState, setRoomState] = useRecoilState(chatRoomState);
@@ -66,21 +64,16 @@ const InviteModal: React.FC = () => {
           },
         }
       );
-
       const roomId = response.data.result;
-      console.log("roomId: ", roomId);
-
       setRoomState({
         ...roomState,
         roomId: roomId.toString(),
-        member: member,
       });
-      
-
       navigate('/schedule');
     } catch (err) {
       console.log(err);
     }
+
   };
 
   useEffect(() => {

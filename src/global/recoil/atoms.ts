@@ -1,9 +1,9 @@
 import { atom } from "recoil";
 
 interface ChatRoomState {
-    roomId : string | null;
-    travelId : string | null;
-    userId : string | null;
+    roomId : number | null;
+    travelId : number | null;
+    userId : number | null;
     member : string | null;
     roomName : string | null;
     startDate: string | null;

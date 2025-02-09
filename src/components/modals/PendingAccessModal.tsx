@@ -24,7 +24,6 @@ const PendingAccessModal: React.FC = () => {
       setResponseMessage("초대 ID를 확인할 수 없습니다.");
       setLoading(false);
       return;
-
     }
 
     const client = new Client({
@@ -37,9 +36,6 @@ const PendingAccessModal: React.FC = () => {
           setInvitations((prev) => [...prev, invite]);
           console.log("invite: ", invite);
         });
-
-
-        console.log("Notification sent to host. 1");
         
         client.publish({
           destination: `/pub/inviteClick`,
@@ -48,7 +44,6 @@ const PendingAccessModal: React.FC = () => {
             inviteeId: 2, // 초대받은 사람 ID
             invitation: invitationId,
           }),
-
         });
       },
       onStompError: (frame) => {
