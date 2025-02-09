@@ -17,6 +17,7 @@ import MakeChatPage from "./pages/MakeChatPage";
 import LoadingPage from "./pages/LoadingPage";
 import PendingAccessModal from "./components/modals/PendingAccessModal";
 import SelectDatePage from "./pages/SelectDatePage";
+import DayPickerPage from "./pages/DayPickerPage";
 const App: React.FC = () => {
   return (
     <RecoilRoot>
@@ -36,8 +37,15 @@ const App: React.FC = () => {
           <Route path="/select-region" element={<SelectRegionPage />} />
           <Route path="/make-room" element={<MakeChatPage />} />
           <Route path="/loading" element={<LoadingPage />} />
-          <Route path="/member/kakao/callback" element={<OAuth2RedirectHandler />} />
-          <Route path="/invite/:travelId/:invitationId" element={<PendingAccessModal />} />
+          <Route
+            path="/member/kakao/callback"
+            element={<OAuth2RedirectHandler />}
+          />
+          <Route
+            path="/invite/:travelId/:invitationId"
+            element={<PendingAccessModal />}
+          />
+          <Route path="/day-picker" element={<DayPickerPage />} />
           <Route
             path="/member/kakao/callback"
             element={<OAuth2RedirectHandler />}

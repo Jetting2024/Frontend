@@ -57,13 +57,13 @@ const DirectInputButton: React.FC<DirectInputButtonProps> = ({ onConfirm }) => {
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 bg-black text-white rounded-2xl hover:bg-lightgray hover:text-black"
+                className="px-4 py-2 bg-lightgray text-black rounded-2xl hover:bg-black hover:text-white"
               >
                 취소
               </button>
               <button
                 onClick={handleConfirm}
-                className="px-4 py-2 bg-black text-white rounded-2xl hover:bg-lightgray hover:text-black"
+                className="px-4 py-2 bg-lightgray text-black rounded-2xl hover:bg-black hover:text-white"
               >
                 추가
               </button>

@@ -72,6 +72,18 @@ const InviteModal: React.FC = () => {
       navigate('/schedule');
     } catch (err) {
       console.log(err);
+      //오류 시에도 스케줄 페이지 이동(임시방편...)
+      navigate("/schedule", {
+        state: {
+          travelId,
+          invitationLink,
+          member,
+          startDate,
+          endDate,
+          fullDate,
+          roomName,
+        },
+      });
     }
 
   };
@@ -96,14 +108,13 @@ const InviteModal: React.FC = () => {
 
         {/* 링크 부분 */}
         <div className="flex gap-6">
-          <div
-            className="h-12 flex items-center px-4 gap-2 rounded-full shadow-sm text-[0.8rem] text-gray border border-[#b7b7b7] bg-white hover:bg-lightgray">
+          <div className="h-12 flex items-center px-4 gap-2 rounded-full shadow-sm text-[0.8rem] text-gray border border-[#b7b7b7] bg-white hover:bg-lightgray">
             <FaLink fill="#b7b7b7" className="w-4 h-4" />
             <span className="text-black text-opacity-50">{invitationLink}</span>
             <button onClick={handleCopyLink}>복사</button>
           </div>
         </div>
-          <button 
+        <button
           className=" w-28 h-12 mt-6 bg-black text-white rounded-lg hover:bg-gray"
           onClick={createRoom}
           >

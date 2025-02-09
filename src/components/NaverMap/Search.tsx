@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { authState } from "../../global/recoil/authAtoms";
 
 interface SearchResult {
-  title: string;
-  address: string;
-  category: string;
-  telephone: string;
+  address_name: string;
+  id: string;
+  place_name: string;
+  place_url: string;
   lat: number;
   lng: number;
 }
+interface SearchProps {
+  dayIndex: number;
+  addLocation: (dayIndex: number, title: string, location: string) => void;
+}
 
-const Search: React.FC = () => {
+const Search: React.FC<SearchProps> = ({ dayIndex, addLocation }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [error, setError] = useState<string | null>(null); // 에러 상태
 
+  const readAuthState = useRecoilValue(authState);
+
+  const handleAdd = (title: string, location: string) => {
+    addLocation(dayIndex, title, location); // 선택된 날짜에 장소 추가
+    alert(`${title}이(가) 추가되었습니다.`);
+  };
+
   const handleSearch = async () => {
-    if (!query.trim) {
+    if (!query.trim()) {
       alert("검색어를 입력하세요.");
       return;
     }
@@ -26,28 +39,58 @@ const Search: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:8080/api/search`, {
-        params: {
-          query,
-          display: 5, // 최대 5개의 결과
-        },
-      });
-
-      if (response.status === 200) {
-        const items = response.data.items.map((item: any) => ({
-          title: item.title.replace(/<\/?b>/g, ""), // HTML 태그 제거
-          address: item.roadAddress,
-          category: item.category,
-          telephone: item.telephone || "없음",
-          lat: parseFloat(item.mapy), // 위도
-          lng: parseFloat(item.mapx), // 경도
-        }));
-
-        setResults(items);
-      } else {
-        setError("API 요청 실패");
-        console.error("API 요청 실패:", response);
+      console.log("토큰:", readAuthState.accessToken);
+      if (!readAuthState.accessToken) {
+        alert("로그인이 필요합니다.");
+        return;
       }
+
+      const response = await axios.get(
+        `http://localhost:8080/travel/kakao/searchKeyword`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${readAuthState.accessToken}`,
+          },
+          params: { query },
+        }
+      );
+
+      const rawResult = response.data.result;
+
+      const fixedResult = rawResult
+        .replace(/=/g, ":") // '='를 ':'로 변환
+        .replace(/([a-zA-Z0-9_]+):/g, '"$1":') // 키를 큰따옴표로 감싸기
+        .replace(/:\s*([^,\}\]]+)/g, (match: any, p1: any) => {
+          if (["null", "true", "false"].includes(p1)) return `: ${p1}`;
+          return /^[-+]?\d+(\.\d+)?$/.test(p1) ? `: ${p1}` : `: "${p1}"`;
+        })
+        .replace(/,\s*(?=[}\]])/g, "") // 닫는 괄호 앞의 쉼표 제거
+        .replace(/,\s*$/g, "") // 문자열 끝의 쉼표 제거
+        .replace(/:\s*,/g, ": null,") // 빈 값을 null로 대체
+        .replace(/"place_url": ""http":/g, '"place_url": "http:') // 잘못된 따옴표 수정
+        .replace(/[^"]+>[^"]+/g, "") // 잘못된 텍스트 제거
+        .replace(/"category_group_code":.*?,/g, "") // 불필요한 필드 제거
+        .replace(/"category_group_name":.*?,/g, "")
+        .replace(/"category_name":.*?,/g, "")
+        .replace(/"distance":.*?,/g, "")
+        .replace(/"phone":.*?,/g, "")
+        .replace(/"road_address_name":.*?,/g, "");
+
+      // JSON 파싱
+      const parsedResult = JSON.parse(fixedResult);
+
+      // 필요한 데이터만 추출
+      const items = parsedResult.map((item: any) => ({
+        address_name: item.address_name || "주소 없음",
+        id: item.id || "알 수 없음",
+        place_name: item.place_name || "알 수 없음",
+        place_url: item.place_url || "없음",
+        lat: parseFloat(item.y),
+        lng: parseFloat(item.x),
+      }));
+
+      setResults(items);
     } catch (error) {
       console.error("API 요청 중 오류 발생:", error);
       setError("API 요청 중 오류가 발생했습니다.");
@@ -72,31 +115,44 @@ const Search: React.FC = () => {
             }
           }}
         />
-        <button
+        {/* <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          className="py-2 px-4 rounded hover:bg-lightblue"
         >
           검색
-        </button>
+        </button> */}
       </div>
 
       {loading && <p>검색 중입니다...</p>}
 
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* 검색 결과 */}
       <div>
-        <h2 className="text-lg font-bold mb-2">검색 결과:</h2>
-        <ul className="list-disc pl-4">
+        <ul>
           {results.map((result, index) => (
-            <li key={index} className="mb-4 border p-2 rounded shadow">
-              <h3 className="font-bold">{result.title}</h3>
-              <p>주소: {result.address}</p>
-              <p>카테고리: {result.category}</p>
-              <p>전화번호: {result.telephone}</p>
-              <p>
-                위도: {result.lat}, 경도: {result.lng}
-              </p>
+            <li
+              key={index}
+              className="mb-6 border p-4 rounded-lg cursor-pointer"
+            >
+              <div className="flex justify-between items-center">
+                <div
+                  onClick={() => window.open(result.place_url, "_blank")}
+                  className="cursor-pointer"
+                >
+                  <h2 className="font-bold text-[18px]">{result.place_name}</h2>
+                  <p className="text-gray text-sm mt-1">
+                    {result.address_name}
+                  </p>
+                </div>
+                <button
+                  onClick={() =>
+                    handleAdd(result.place_name, result.address_name)
+                  }
+                  className="bg-lightgray text-black py-1 px-3 rounded-full hover:bg-black hover:text-white"
+                >
+                  추가
+                </button>
+              </div>
             </li>
           ))}
         </ul>
