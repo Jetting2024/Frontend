@@ -44,15 +44,16 @@ const MakeRoomModal: React.FC = () => {
         travelId: travelId,
         roomName: roomName,
         userId: readAuthState.id,
-        startDate: startDate,
-        endDate: endDate,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
       });
 
     } catch (err) {
       console.error(err);
     }
-    navigate("/loading", { state: { roomName } });
+    navigate("/loading", { state: { roomName, night } });
   };
+
 
   return (
     <div className="w-auto h-auto p-2 bg-white rounded-lg border border-[#3d3d3d] border-opacity-10 shadow-md flex flex-col justify-center items-center">

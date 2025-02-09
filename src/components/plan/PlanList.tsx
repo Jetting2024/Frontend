@@ -24,7 +24,7 @@ const PlanList: React.FC = () => {
           <div className="w-12 h-6 flex justify-center items-center bg-black rounded-sm text-white text-[0.8rem]">
             멤버
           </div>
-          <div className="text-[0.8rem]">김하은, 유지원, 조윤주, 김홍석</div>
+          <div className="text-[0.8rem]">김하은, 조윤주, 김홍석</div>
         </div>
       </div>
 

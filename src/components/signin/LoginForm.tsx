@@ -60,7 +60,6 @@ const LoginForm: React.FC = () => {
 
       navigate("/");
       alert("로그인에 성공하였습니다!");
-      console.log("토큰:", accessToken);
     } catch (error: any) {
       const errorCode = error?.response?.data?.errorCode;
 

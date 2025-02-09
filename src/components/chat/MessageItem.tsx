@@ -4,8 +4,6 @@ interface MessageItemProps {
   message: string;
   isMine: boolean; // 내가 보낸 메시지 여부
 }
-
-
 const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
   const [currentTime, setCurrentTime] = useState("");
   const [truncatedMessage, setTruncatedMessage] = useState(""); // 축약된 메시지
@@ -16,6 +14,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
+
     const formattedTime = `${hours >= 12 ? "오후" : "오전"} ${
       hours % 12 || 12
     }시 ${minutes < 10 ? `0${minutes}` : minutes}분`;
@@ -60,11 +59,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
       <div className="text-[10px] text-[#3d3d3d] text-opacity-80 min-w-16 mb-1">
         {currentTime}
       </div>
-      <div className="flex flex-row items-center justify-center gap-2">
+      <div className={`flex ${isMine ? "flex-row-reverse" : "flex-row"} items-center justify-center gap-2`}>
         <div className="w-6 h-6 rounded-full bg-gray-300">
           {isMine ? (
             <img
-              src={`${sessionStorage.getItem("image")}` === undefined || null ? "/profile.png" : `${sessionStorage.getItem("image")}`}
+              src={
+                `${sessionStorage.getItem("image")}` === undefined || null
+                  ? "/profile.png"
+                  : `${sessionStorage.getItem("image")}`
+              }
               alt="profile"
               className="w-full h-full object-cover"
             />
@@ -76,23 +79,23 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isMine }) => {
             />
           )}
         </div>
-      </div>
-      <div
-        className={`px-4 py-2 m-2 border-[1px] border-[#3d3d3d] border-opacity-10 shadow-sm rounded-3xl max-w-xs relative ${
-          isMine ? "bg-white" : "bg-[#C2DDF7]"
-        }`}
-      >
-        <div className="whitespace-pre-wrap break-all">
-          {isTruncated ? truncatedMessage : message}
+        <div
+          className={`px-4 py-2 m-2 border-[1px] border-[#3d3d3d] border-opacity-10 shadow-sm rounded-3xl max-w-xs relative ${
+            isMine ? "bg-white" : "bg-[#C2DDF7]"
+          }`}
+        >
+          <div className="whitespace-pre-wrap break-all">
+            {isTruncated ? truncatedMessage : message}
+          </div>
+          {isTruncated && (
+            <button
+              onClick={openNewWindow}
+              className="absolute bottom-2 right-4 text-xs text-[#3d3d3d] text-opacity-50 underline"
+            >
+              전체보기
+            </button>
+          )}
         </div>
-        {isTruncated && (
-          <button
-            onClick={openNewWindow}
-            className="absolute bottom-2 right-4 text-xs text-[#3d3d3d] text-opacity-50 underline"
-          >
-            전체보기
-          </button>
-        )}
       </div>
     </div>
   );

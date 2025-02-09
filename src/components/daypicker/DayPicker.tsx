@@ -96,45 +96,6 @@ const DayPicker: React.FC<DayPickerProps> = ({
           )
         : 0;
 
-    const fullDate = `${year} ${start} ~ ${end} (${nights}박 ${nights + 1}일)`;
-
-    // 날짜 포맷팅 (xxxx-xx-xx 형식)
-    const formatDate = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0"); // 월 2자리
-      const day = String(date.getDate()).padStart(2, "0"); // 일 2자리
-      return `${year}-${month}-${day}`;
-    };
-
-    const formattedStartDate = startDate ? formatDate(startDate) : null;
-    const formattedEndDate = endDate ? formatDate(endDate) : null;
-
-    try {
-      const response = await fetch("http://localhost:8080/travel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${readAuthState.accessToken}`,
-        },
-        body: JSON.stringify({
-          travelName,
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("travelId:", data.result);
-      } else {
-        console.error("여행 생성 실패:", response);
-        alert("여행 생성에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("API 요청 중 오류:", error);
-      alert("오류가 발생했습니다. 다시 시도해주세요.");
-    }
-
     navigator("/make-room", { state: { start, end, nights } });
   };
 

@@ -39,7 +39,6 @@ const Search: React.FC<SearchProps> = ({ dayIndex, addLocation }) => {
     setError(null);
 
     try {
-      console.log("토큰:", readAuthState.accessToken);
       if (!readAuthState.accessToken) {
         alert("로그인이 필요합니다.");
         return;

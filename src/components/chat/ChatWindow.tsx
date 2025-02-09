@@ -42,8 +42,6 @@ const ChatWindow: React.FC = () => {
       return;
     }
 
-    console.log("새로운 메시지", newMessage);
-    
     const chatMessage: ChatMessage = {
       roomId: roomState.roomId,
       userId: readAuthInfo.id,
@@ -104,7 +102,7 @@ const ChatWindow: React.FC = () => {
         }
       }
     );
-    
+
     return () => {
       subscription.unsubscribe();
       console.log(
@@ -132,7 +130,6 @@ const ChatWindow: React.FC = () => {
           console.log("No previous messages found.");
           setMessages([]);
         }
-
       } catch (err) {
         console.error("Error fetching messages:", err);
         setMessages([]);
@@ -145,16 +142,23 @@ const ChatWindow: React.FC = () => {
   useEffect(() => {
     const fetchChatInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/chat/info/${roomState.roomId}`, {
-          headers: {
-            Authorization: `Bearer ${readAuthInfo.accessToken}`,
-          },
-        });
-        const updatedMembers = response.data.result.members.map((member: { id: number; email: string; name?: string | null }) => ({
-          ...member,
-          name: member.name ?? "익명 유저"
-        }));
-        const memberNames = updatedMembers.map((member: { name: string; }) => member.name).join(", ");
+        const response = await axios.get(
+          `http://localhost:8080/chat/info/${roomState.roomId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${readAuthInfo.accessToken}`,
+            },
+          }
+        );
+        const updatedMembers = response.data.result.members.map(
+          (member: { id: number; email: string; name?: string | null }) => ({
+            ...member,
+            name: member.name ?? "익명 유저",
+          })
+        );
+        const memberNames = updatedMembers
+          .map((member: { name: string }) => member.name)
+          .join(", ");
         const roomName = response.data.result.roomName;
         setRoomState({
           ...roomState,
@@ -200,60 +204,71 @@ const ChatWindow: React.FC = () => {
 
       {/* ✅ 채팅 창 */}
       <section
-        className={`bg-white fixed z-40 bottom-0 right-0 w-[78rem] max-w-full min-w-[40rem] border-2 border-lightgray rounded-tr-3xl rounded-tl-3xl shadow-md transition-all duration-300 ease-in-out`}
+        className={`bg-white fixed z-40 bottom-4 right-4 transition-all duration-300 ease-in-out ${
+          isChatOpen
+            ? "w-2/3 max-w-full min-w-[40rem] rounded-lg shadow-md"
+            : "w-16 h-16 rounded-full flex justify-center items-center shadow-lg cursor-pointer hover:bg-sky-200"
+
+        }`}
         style={{
-          height: isChatOpen ? "53rem" : "3rem",
+          height: isChatOpen ? "53rem" : "4rem",
         }}
       >
-        <div className="h-12 flex items-center justify-between px-4">
-          <div className="flex-grow flex justify-center">
-            <button
-              onClick={toggleChat}
-              className="flex items-center absolute left-1/2 top-3 transform -translate-x-1/2"
-            >
-              {isChatOpen ? (
-                <FaAngleDown className="text-gray-400" size={24} />
-              ) : (
-                <FaAngleUp className="text-gray-400" size={24} />
-              )}
-            </button>
-          </div>
-          {isChatOpen && (
-            <button
-              className="flex items-center gap-2"
-              onClick={handleInviteModalOpen}
-            >
-              <div className="mt-1 text-gray">멤버 초대하기</div>
-              <IoPersonAddOutline />
-            </button>
-          )}
-        </div>
+        {isChatOpen ? (
+          <>
+            {/* 채팅창 내용 */}
+            <div className="h-12 flex items-center justify-between px-4">
+              <div className="flex-grow flex justify-center">
+                <button
+                  onClick={toggleChat}
+                  className="flex items-center absolute left-1/2 top-3 transform -translate-x-1/2"
+                >
+                  <FaAngleDown className="text-gray-400" size={24} />
+                </button>
+              </div>
+              <button
+                className="flex items-center gap-2"
+                onClick={handleInviteModalOpen}
+              >
+                <div className="mt-1 text-gray">멤버 초대하기</div>
+                <IoPersonAddOutline />
+              </button>
+            </div>
 
-        <div className="h-[calc(50rem)] flex flex-col">
-          <div className="w-full h-[6rem] px-16 py-2 flex justify-center items-center border-b-2 border-lightgray">
-            <ChatInfo />
-          </div>
+            <div className="h-[calc(50rem)] flex flex-col">
+              <div className="w-full h-[6rem] px-16 py-2 flex justify-center items-center border-b-2 border-lightgray">
+                <ChatInfo />
+              </div>
 
-          <div className="h-[38rem] flex flex-col-reverse overflow-y-auto gap-2 custom-scrollbar">
-            <div className="flex flex-col px-20">
-              <TodayDate />
-              <div className="flex flex-col overflow-y-auto">
-                {messages.map((message, index) => (
-                  <MessageItem
-                    key={index}
-                    message={message.message || ""}
-                    isMine={message.userId === readAuthInfo.id}
-                  />
-                ))}
-                <div ref={messagesEndRef} />
+              <div className="h-[38rem] flex flex-col-reverse overflow-y-auto gap-2 custom-scrollbar">
+                <div className="flex flex-col px-20">
+                  <TodayDate />
+                  <div className="flex flex-col overflow-y-auto">
+                    {messages.map((message, index) => (
+                      <MessageItem
+                        key={index}
+                        message={message.message || ""}
+                        isMine={message.userId === readAuthInfo.id}
+                      />
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-[6rem] px-20 py-2 flex justify-center items-center">
+                <MessageInput onSendMessage={handleSendMessage} />
               </div>
             </div>
-          </div>
-
-          <div className="h-[6rem] px-20 py-2 flex justify-center items-center">
-            <MessageInput onSendMessage={handleSendMessage} />
-          </div>
-        </div>
+          </>
+        ) : (
+          <button
+            onClick={toggleChat}
+            className="w-16 h-16 bg-purple rounded-full flex justify-center items-center shadow-lg"
+          >
+            <FaAngleUp className="text-white" size={24} />
+          </button>
+        )}
       </section>
     </>
   );
