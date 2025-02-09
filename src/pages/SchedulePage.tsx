@@ -7,6 +7,7 @@ import InviteResponseModal from "../components/modals/InviteResponseModal";
 import { Client } from "@stomp/stompjs";
 import { useRecoilValue } from "recoil";
 import { chatRoomState } from "../global/recoil/atoms";
+import connectWebSocket from "../socket/connectWebSocket";
 
 const SchedulePage: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -48,13 +49,10 @@ const SchedulePage: React.FC = () => {
   };
 
   useEffect(() => {
-    const client = new Client({
-      brokerURL: "ws://localhost:8080/ws",
-      onConnect: () => {
-        console.log("Connected to WebSocket for invite response.");
-
-        // 구독 설정
-        client.subscribe(`/sub/alert/${readRoomState.travelId}`, (message) => {
+    const client = connectWebSocket((stompClient) => {
+      stompClient.subscribe(
+        `/sub/alert/${readRoomState.travelId}`,
+        (message) => {
           const invite = JSON.parse(message.body);
           console.log("Message received:", invite);
 
@@ -66,15 +64,10 @@ const SchedulePage: React.FC = () => {
             invitationLink: invite.invitation,
             invitedPerson: "초대받은 사람 이름", // 필요시 수정
           });
-          console.log("inviteData", inviteData);
-        });
-      },
-      onStompError: (frame) => {
-        console.error("STOMP error:", frame);
-      },
+        }
+      );
     });
 
-    client.activate();
     clientRef.current = client;
 
     return () => {
@@ -154,7 +147,6 @@ const SchedulePage: React.FC = () => {
             onClose={closeInviteModal}
           />
         </div>
-
       )}
     </div>
   );

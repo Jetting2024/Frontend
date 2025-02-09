@@ -8,9 +8,11 @@ import TodayDate from "./TodayDate";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { chatRoomState } from "../../global/recoil/atoms";
 import { authState } from "../../global/recoil/authAtoms";
-import axios from "axios";
 import { Client } from "@stomp/stompjs";
 import InviteModal from "../modals/InviteModal";
+import connectWebSocket from "../../socket/connectWebSocket";
+import { messagesState } from "../../global/recoil/chatAtom";
+import { fetchChatInfo, fetchMessages } from "./chatAPI";
 
 interface ChatMessage {
   roomId: number | null;
@@ -21,7 +23,6 @@ interface ChatMessage {
 
 const ChatWindow: React.FC = () => {
   const [isChatOpen, setIsChatOpen] = useState(true);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [roomState, setRoomState] = useRecoilState(chatRoomState);
@@ -31,11 +32,48 @@ const ChatWindow: React.FC = () => {
 
   // WebSocket 객체를 useRef로 관리
   const clientRef = useRef<Client | null>(null);
+  const [messages, setMessages] = useRecoilState(messagesState);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
+  
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    const client = connectWebSocket((stompClient) => {
+      stompClient.subscribe(`/sub/chat/room/${roomState.roomId}`, (message) => {
+        try {
+          const receivedMessage = JSON.parse(message.body);
+          setMessages((prev) => [...prev, receivedMessage]);
+          console.log("Received message:", receivedMessage);
+        } catch (err) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              roomId: roomState.roomId,
+              userId: readAuthInfo.id,
+              message: message.body,
+              createAt: new Date().toISOString(),
+            },
+          ]);
+        }
+      });
+    });
+
+    clientRef.current = client;
+
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.deactivate();
+      }
+    };
+  }, [roomState.roomId, readAuthInfo.id]);
+
+  
   const handleSendMessage = (newMessage: string) => {
     if (!roomState.roomId) {
       console.error("roomId is null. Cannot send a message.");
@@ -48,7 +86,8 @@ const ChatWindow: React.FC = () => {
       message: newMessage,
       createAt: new Date().toISOString(),
     };
-    if (clientRef.current?.connected) {
+
+    if (clientRef.current) {
       clientRef.current.publish({
         destination: `/pub/sendMessage`,
         body: JSON.stringify(chatMessage),
@@ -60,117 +99,20 @@ const ChatWindow: React.FC = () => {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    (async () => {
+      if(!roomState.roomId || !readAuthInfo.accessToken) return;
+      const fetchedMessages = await fetchMessages(roomState.roomId, readAuthInfo.accessToken);
+      setMessages(fetchedMessages);
 
-  useEffect(() => {
-    if (!clientRef.current) {
-      console.log("Initializing WebSocket client...");
-
-      const stompClient = new Client({
-        brokerURL: "ws://localhost:8080/ws",
-        reconnectDelay: 5000,
+      const fetchedChatInfo = await fetchChatInfo(roomState.roomId, readAuthInfo.accessToken);
+      setRoomState({
+        ...roomState,
+        roomName: fetchedChatInfo.roomName,
+        member: fetchedChatInfo.members,
       });
+    })();
 
-      stompClient.activate(); // WebSocket 활성화
-      clientRef.current = stompClient; // WebSocket 객체를 useRef에 저장
-    }
-
-    if (!clientRef.current.connected) {
-      console.log("Waiting for WebSocket connection...");
-      return;
-    }
-
-    const subscription = clientRef.current.subscribe(
-      `/sub/chat/room/${roomState.roomId}`,
-      (message) => {
-        try {
-          const receivedMessage = JSON.parse(message.body);
-          console.log("[STOMP] JSON Message received:", receivedMessage);
-          setMessages((prev) => [...prev, receivedMessage]);
-        } catch (error) {
-          console.warn("[STOMP] Non-JSON Message received:", message.body);
-          setMessages((prev) => [
-            ...prev,
-            {
-              roomId: roomState.roomId,
-              userId: readAuthInfo.id,
-              message: message.body,
-              createAt: new Date().toISOString(),
-            },
-          ]);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-      console.log(
-        `[STOMP] Unsubscribed from /sub/chat/room/${roomState.roomId}`
-      );
-    };
-  }, [roomState.roomId, readAuthInfo.id]);
-
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/chat/${roomState.roomId}/getMessages`,
-          {
-            headers: {
-              Authorization: `Bearer ${readAuthInfo.accessToken}`,
-            },
-          }
-        );
-
-        if (response.data.result && response.data.result.length > 0) {
-          console.log("Fetched messages:", response.data.result);
-          setMessages(response.data.result);
-        } else {
-          console.log("No previous messages found.");
-          setMessages([]);
-        }
-      } catch (err) {
-        console.error("Error fetching messages:", err);
-        setMessages([]);
-      }
-    };
-
-    fetchMessages();
-  }, [roomState.roomId, readAuthInfo.accessToken]);
-
-  useEffect(() => {
-    const fetchChatInfo = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8080/chat/info/${roomState.roomId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${readAuthInfo.accessToken}`,
-            },
-          }
-        );
-        const updatedMembers = response.data.result.members.map(
-          (member: { id: number; email: string; name?: string | null }) => ({
-            ...member,
-            name: member.name ?? "익명 유저",
-          })
-        );
-        const memberNames = updatedMembers
-          .map((member: { name: string }) => member.name)
-          .join(", ");
-        const roomName = response.data.result.roomName;
-        setRoomState({
-          ...roomState,
-          roomName: roomName,
-          member: memberNames,
-        });
-      } catch (err) {
-        console.error("Error fetching chat info:", err);
-      }
-    };
-    fetchChatInfo();
-  }, [roomState.roomId, readAuthInfo.accessToken]);
+  }, [roomState.roomId, readAuthInfo.accessToken, setMessages]);
 
   const handleInviteModalOpen = () => {
     setIsInviteModalOpen(true);
@@ -211,13 +153,13 @@ const ChatWindow: React.FC = () => {
 
         }`}
         style={{
-          height: isChatOpen ? "53rem" : "4rem",
+          height: isChatOpen ? "50rem" : "4rem",
         }}
       >
         {isChatOpen ? (
           <>
             {/* 채팅창 내용 */}
-            <div className="h-12 flex items-center justify-between px-4">
+            <div className="h-10 flex items-center justify-between px-4">
               <div className="flex-grow flex justify-center">
                 <button
                   onClick={toggleChat}
@@ -235,7 +177,7 @@ const ChatWindow: React.FC = () => {
               </button>
             </div>
 
-            <div className="h-[calc(50rem)] flex flex-col">
+            <div className="h-[calc(47.5rem)] flex flex-col">
               <div className="w-full h-[6rem] px-16 py-2 flex justify-center items-center border-b-2 border-lightgray">
                 <ChatInfo />
               </div>
