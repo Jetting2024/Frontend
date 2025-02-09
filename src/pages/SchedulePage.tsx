@@ -51,7 +51,7 @@ const SchedulePage: React.FC = () => {
 
   useEffect(() => {
     const client = connectWebSocket((stompClient) => {
-      const subscription = stompClient.subscribe(
+      stompClient.subscribe(
         `/sub/alert/${readRoomState.travelId}`,
         (message) => {
           const invite = JSON.parse(message.body);
@@ -71,21 +71,13 @@ const SchedulePage: React.FC = () => {
       clientRef.current = client;
 
       return () => {
-        subscription.unsubscribe();
+        // subscription.unsubscribe();
         if (clientRef.current) {
           clientRef.current.deactivate();
         }
       };
     });
-
-    clientRef.current = client;
-
-    return () => {
-      if (clientRef.current) {
-        clientRef.current.deactivate();
-      }
-    };
-  }, [inviteStatus]);
+  }, []);
 
   const handleInviteResponse = (
     status: "ACCEPT" | "REFUSE",
@@ -94,7 +86,7 @@ const SchedulePage: React.FC = () => {
   ) => {
     console.log(`✅ 초대 응답: ${status}, travelId: ${travelId}, inviteeId: ${inviteeId}`);
   
-    setInviteStatus((prev) => {
+    setInviteStatus(() => {
       if (clientRef.current) {
         clientRef.current.publish({
           destination: "/pub/inviteResponse",

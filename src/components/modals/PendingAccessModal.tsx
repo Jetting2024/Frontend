@@ -28,12 +28,12 @@ const PendingAccessModal: React.FC = () => {
     }
 
     const client = connectWebSocket((stompClient) => {
-      console.log("여기");
-
-      stompClient.subscribe(`/sub/alert/${travelId}`, (message) => {
-        const response = JSON.parse(message.body)
-        setStatus((prev) => [...prev, response]);
-        console.log("response: ", response);
+      stompClient.subscribe(
+        `/sub/alert/${travelId}`, 
+        (message) => {
+          const response = JSON.parse(message.body)
+          setStatus((prev) => [...prev, response]);
+          console.log("response: ", response);
       });
 
       stompClient.publish({
@@ -45,6 +45,7 @@ const PendingAccessModal: React.FC = () => {
           invitation: invitationId,
         }),
       });
+      
       clientRef.current = client;
   
       // 최소 로딩 시간 설정 (1분)
