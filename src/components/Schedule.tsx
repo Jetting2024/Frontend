@@ -217,7 +217,7 @@ const Schedule: React.FC<{
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/2 h-screen border border-lightgray p-4 relative">
+      <div className="w-1/2 h-screen border border-lightgray p-4 relative overflow-y-auto">
         <div className="bg-white rounded-2xl p-8 relative">
           {/* 편집 모드가 아닌 경우 "편집하기" 버튼 표시 */}
           {isOwner && !isEditMode && (
@@ -282,7 +282,7 @@ const Schedule: React.FC<{
             <p className="text-gray text-sm mt-2">{tripDates}</p>
           </div>
 
-          <div className="divide-y divide-gray mt-4">
+          <div className="divide-y divide-gray mt-4 h-screen">
             {dayLabels.map((dayLabel, index) => (
               <div key={index} className="py-8">
                 <p className="text-sm text-gray px-2 pb-1">{dayLabel}</p>
