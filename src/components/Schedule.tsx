@@ -39,13 +39,10 @@ const Schedule: React.FC<{
   const [modalType, setModalType] = useState("");
   const [editValue, setEditValue] = useState("");
 
-  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>([]); // 날짜별 일정 데이터
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[][]>(() => [
+    [],
+  ]);
   const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
-
-  // const handleAddLocation = (dayIndex: number) => {
-  //   toggleSearch(dayIndex); // 검색 세션 열기
-  //   setSelectedDayIndex(dayIndex); // 선택한 날짜 저장
-  // };
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -97,23 +94,22 @@ const Schedule: React.FC<{
   };
 
   const loadMoreItems = useCallback(() => {
-    const allItems = scheduleData.flat(); // 평탄화된 배열 가져오기
-    const nextItems = allItems.slice(page * 10, (page + 1) * 10); // 다음 항목 가져오기
+    const allItems = Array.isArray(scheduleData) ? scheduleData.flat() : []; // ✅ 안전한 flat() 적용
+    const nextItems = allItems.slice(page * 10, (page + 1) * 10);
 
     if (nextItems.length > 0) {
-      const newScheduleData = [...allItems, ...nextItems]; // 기존 + 추가된 항목
+      const newScheduleData = [...allItems, ...nextItems];
 
-      // 배열을 날짜별로 그룹화하여 ScheduleItem[][] 형식으로 변환
       const groupedData: ScheduleItem[][] = [];
       newScheduleData.forEach((item) => {
-        const dayIndex = Math.floor((item.id - 1) / 10); // 날짜 그룹화 기준
+        const dayIndex = Math.floor((item.id - 1) / 10);
         if (!groupedData[dayIndex]) {
           groupedData[dayIndex] = [];
         }
         groupedData[dayIndex].push(item);
       });
 
-      setScheduleData(groupedData); // ScheduleItem[][]로 상태 업데이트
+      setScheduleData(groupedData);
       setPage((prev) => prev + 1);
     }
   }, [page, scheduleData]);
@@ -181,9 +177,10 @@ const Schedule: React.FC<{
   }, [startDate, endDate, roomName]);
 
   const addNewItem = (dayIndex: number, title: string, location: string) => {
+    const allItems = Array.isArray(scheduleData) ? scheduleData.flat() : [];
+
     const newId =
-      scheduleData.flat().reduce((maxId, item) => Math.max(maxId, item.id), 0) +
-      1;
+      allItems.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
 
     const newItem: ScheduleItem = {
       id: newId,
@@ -192,10 +189,14 @@ const Schedule: React.FC<{
       location,
     };
 
-    setScheduleData((prev) => ({
-      ...prev,
-      [dayIndex]: [...(prev[dayIndex] || []), newItem], // 해당 날짜 배열에 추가
-    }));
+    setScheduleData((prev) => {
+      const updatedSchedule = Array.isArray(prev) ? [...prev] : [[]]; // ✅ 항상 2차원 배열 유지
+      if (!updatedSchedule[dayIndex]) {
+        updatedSchedule[dayIndex] = [];
+      }
+      updatedSchedule[dayIndex].push(newItem);
+      return updatedSchedule;
+    });
   };
 
   const addLocation = (dayIndex: number, title: string, location: string) => {
