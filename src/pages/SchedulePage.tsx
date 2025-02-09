@@ -21,6 +21,7 @@ const SchedulePage: React.FC = () => {
     invitationLink: string | undefined;
     invitedPerson: string | undefined;
   } | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<string | null>(null);
 
   const clientRef = useRef<Client | null>(null);
   const readRoomState = useRecoilValue(chatRoomState);
@@ -50,7 +51,7 @@ const SchedulePage: React.FC = () => {
 
   useEffect(() => {
     const client = connectWebSocket((stompClient) => {
-      stompClient.subscribe(
+      const subscription = stompClient.subscribe(
         `/sub/alert/${readRoomState.travelId}`,
         (message) => {
           const invite = JSON.parse(message.body);
@@ -66,6 +67,15 @@ const SchedulePage: React.FC = () => {
           });
         }
       );
+
+      clientRef.current = client;
+
+      return () => {
+        subscription.unsubscribe();
+        if (clientRef.current) {
+          clientRef.current.deactivate();
+        }
+      };
     });
 
     clientRef.current = client;
@@ -75,7 +85,37 @@ const SchedulePage: React.FC = () => {
         clientRef.current.deactivate();
       }
     };
-  }, []);
+  }, [inviteStatus]);
+
+  const handleInviteResponse = (
+    status: "ACCEPT" | "REFUSE",
+    travelId?: number | null,
+    inviteeId?: number | null
+  ) => {
+    console.log(`✅ 초대 응답: ${status}, travelId: ${travelId}, inviteeId: ${inviteeId}`);
+  
+    setInviteStatus((prev) => {
+      if (clientRef.current) {
+        clientRef.current.publish({
+          destination: "/pub/inviteResponse",
+          body: JSON.stringify({
+            travelId: readRoomState.travelId,
+            inviteeId: 2,
+            status: status,
+          }),
+        });
+        console.log(`📩 초대 응답 WebSocket 메시지 전송됨: ${status}`);
+      } else {
+        console.error("❌ WebSocket client is not initialized.");
+      }
+      
+      return status; // 상태 업데이트
+    });
+  
+    setIsInviteModalVisible(false);
+  };
+  
+  
 
   return (
     <div className="flex flex-col h-[calc(100vh-56px)]">
@@ -145,6 +185,7 @@ const SchedulePage: React.FC = () => {
             inviteeId={inviteData?.inviteeId}
             invitedPerson={inviteData?.invitedPerson}
             onClose={closeInviteModal}
+            onResponse={handleInviteResponse}
           />
         </div>
       )}
