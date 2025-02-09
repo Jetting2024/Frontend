@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { IoCloseOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { useRecoilValue } from "recoil";
 import { authState } from "../../global/recoil/authAtoms";
@@ -13,39 +13,30 @@ interface InviteResponseModalProps {
   onClose: () => void;
 }
 
-
-interface InviteStatusDto {
-  travelId: number | null;
-  inviteeId: number | null;
-  status: string | null;
-}
-
 const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
   inviteeId,
   invitedPerson,
   onClose,
 }) => {
-  const readAuthState = useRecoilValue(authState);
   const readRoomState = useRecoilValue(chatRoomState);
   const clientRef = useRef<Client | null>(null);
-  const [status, setStatus] = useState<InviteStatusDto[]>([]);
 
   useEffect(() => {
-    const client = connectWebSocket((stompClient) => {
-      stompClient.subscribe(`/alert/${readRoomState.travelId}`, (message) => {
-        const result = JSON.parse(message.body) as InviteStatusDto;
-        setStatus((prev) => [...prev, result]);
-      });
-    });
+    if (!readRoomState.travelId) return;
+
+    console.log(`[WebSocket] Connecting to /alert/${readRoomState.travelId}`);
+
+    const client = connectWebSocket(() => {});
 
     clientRef.current = client;
 
     return () => {
       if (clientRef.current) {
         clientRef.current.deactivate();
+        console.log("[WebSocket] Disconnected");
       }
     };
-  }, []);
+  }, [readRoomState.travelId]);
 
   const handleResponse = (status: "ACCEPT" | "REFUSE") => {
     if (!inviteeId) {
@@ -62,6 +53,7 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
           status: status,
         }),
       });
+      console.log(`📩 초대 응답 전송: ${status}`);
     } else {
       console.error("WebSocket client is not initialized.");
     }
@@ -79,25 +71,13 @@ const InviteResponseModal: React.FC<InviteResponseModalProps> = ({
       </div>
 
       <div className="flex flex-row gap-2 items-center">
-        <button
-          className="text-red-300 text-[0.8rem] hover:text-red-400"
-          onClick={() => handleResponse("REFUSE")}
-        >
+        <button className="text-red-300 text-[0.8rem] hover:text-red-400" onClick={() => handleResponse("REFUSE")}>
           거부
         </button>
-        <button
-          className="px-4 py-1 text-white text-[0.8rem] rounded-lg border border-gray hover:bg-gray"
-          onClick={() => handleResponse("ACCEPT")}
-        >
+        <button className="px-4 py-1 text-white text-[0.8rem] rounded-lg border border-gray hover:bg-gray" onClick={() => handleResponse("ACCEPT")}>
           수락
         </button>
-        <IoCloseOutline
-          size={24}
-          stroke="#fff"
-          className="cursor-pointer"
-          onClick={onClose}
-          aria-label="Close Modal"
-        />
+        <IoCloseOutline size={24} stroke="#fff" className="cursor-pointer" onClick={onClose} aria-label="Close Modal" />
       </div>
     </div>
   );
